@@ -2,7 +2,8 @@
 ## ME 3255 Fall 2021
 ### GitHub page: [github.com/cooperrc/computational-mechanics](https://github.com/cooperrc/computational-mechanics)
 ### JupyterHub server: <https://compmech.uconn.edu/>
-### ME3255 - chat room: [![Gitter](https://badges.gitter.im/ME3255/logistics.svg)](https://gitter.im/ME3255/logistics?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+### ME3255 - chat room:
+[![Gitter](https://badges.gitter.im/ME3255/community.svg)](https://gitter.im/ME3255/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Course Description
 
@@ -57,14 +58,25 @@ __Prerequisite:__ CE 2110 and MATH 2110 or 2130
 
 __Instructor__: Prof. Ryan C. Cooper __<ryan.c.cooper@uconn.edu>__
 
-__Teaching Assistants__:
-- sec001: Genevieve Kunkel
-- sec002: Mohammad Madani
-
-__Office Hours/Availability:__ Thur-Fri 12-1pm (EST)
+__Office Hours/Availability:__ Mon/Wed 11-12pm (EST) <https://uconn-cmr.webex.com/meet/rcc02007>
 
 __Preferred Contact:__ Post questions and comments to
-[Gitter](https://gitter.im/ME3255/logistics?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+[Gitter](https://gitter.im/ME3255):
+> Introduce yourself in the [logistics room](https://gitter.im/ME3255/logistics) and take a look at
+the community rooms to discuss:
+> -  logistics e.g. due dates, grades, introductions [ME3255/logistics](https://gitter.im/ME3255/logistics)
+> - concepts and exercises in the readings [ME3255/readings](https://gitter.im/ME3255/readings)
+> -  homework and project hands-on work [ME3255/work](https://gitter.im/ME3255/work)
+
+
+
+__Teaching Assistants__:
+
+|section | TA | email| GitHub handle| office hours | Webex room |
+|---|---|---|---|---|---|
+| sec001 | Genevieve Kunkel | <genevieve.kunkel@uconn.edu>| @gmk19001| Thu 12:30-2:30pm |<https://uconn-cmr.webex.com/meet/gmk19001>|
+| sec002 | Mohammad Madani | <mohammad.madani@uconn.edu> | | Mon 1-3pm | |
+
 
 __Lectures__: 
 - sec001: MWF 9:05-9:55am in BPB 130
@@ -146,9 +158,13 @@ Scientists_ 4th edition.
 
 | Item | Percent | Requirement |
 |---------|---|---------------------------|
-| Participation | 30 % | Complete the notebook exercises and discussion questions on Gitter|
+| Participation | 30 % | Discussion questions on Gitter+class, self assessed|
 | Homework | 30 % | Complete the end-of-notebook problems|
 | Projects | 40 % | Complete the module project and submit to GitHub| 
+
+__Participation__: The participation grade will be self-assigned. At
+week 7 you will submit your current grade and modes of participation,
+then during finals week submit an updated final grade. 
 
 ## Academic Integrity: 
 - The instructors of this class have a zero-tolerance policy for academic misconduct, that
