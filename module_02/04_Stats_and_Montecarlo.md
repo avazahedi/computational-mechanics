@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.10.3
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -15,7 +15,7 @@ kernelspec:
 > __Content created under Creative Commons Attribution license CC-BY
 > 4.0, code under BSD 3-Clause License © 2020 R.C. Cooper__
 
-+++ 
++++
 
 # 04 - Statistics and Monte-Carlo Models
 
@@ -47,7 +47,6 @@ The call to `rng.random(20)` created 20 uniformly random numbers between
 0 and 1 saved as the variable `x`. Next, you can plot the histogram of
 `x`.
 
-
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
@@ -60,7 +59,7 @@ plt.hist(x, bins = 5,
             edgecolor = 'w')
 ```
 
-The pyplot function `hist` displays a histogram of these randomly generated numbers. 
+The pyplot function `hist` displays a histogram of these randomly generated numbers.
 
 +++
 
@@ -70,11 +69,14 @@ Try generating more random numbers and plotting histograms of the results i.e. i
 
 What should the histogram of `x` look like if Python is generating truly random numbers?
 
-
 ```{code-cell} ipython3
 x=np.random.rand(10000)
 plt.hist(x);
 ```
+
+If Python is generating truly random numbers, the histogram should look like a flat, horizontal line.
+
++++
 
 ## Examples of Monte Carlo models:
 
@@ -226,9 +228,9 @@ a description of how large particles move and vibrate in fluids that
 have no buld motion. The atoms from the fluid bounce off the suspended
 particles to jiggle them randomly left and right. Take a look at [Up and
 Atom's video](https://www.youtube.com/channel/UCSIvk78tK2TiviLQn4fSHaw)
-for more information in the physics and history of the phenomenon. 
+for more information in the physics and history of the phenomenon.
 
-```{code-cell} ipyhon3
+```{code-cell} ipython3
 from IPython.display import YouTubeVideo
 YouTubeVideo('5jBVYvHeG2c')
 ```
@@ -257,7 +259,7 @@ $Delta x$ and $\Delta y$.
 the location at each step
 4. plot the results
 
-Here, you create the 100 random numbers and shift them by 0.5. 
+Here, you create the 100 random numbers and shift them by 0.5.
 
 ```{code-cell} ipython3
 rng = default_rng()
@@ -265,7 +267,8 @@ N_steps = 100
 dx = rng.random(N_steps) - 0.5
 dy = rng.random(N_steps) - 0.5
 ```
-Next, create the positions at each step. 
+
+Next, create the positions at each step.
 
 ```{code-cell} ipython3
 r = np.zeros((N_steps, 2))
@@ -273,7 +276,7 @@ r = np.zeros((N_steps, 2))
 
 Now, use
 [`np.cumsum`](https://numpy.org/doc/stable/reference/generated/numpy.cumsum.html)
-to find the final position after each step is taken. 
+to find the final position after each step is taken.
 
 ```{code-cell} ipython3
 r[:, 0] = np.cumsum(dx) # final rx position
@@ -281,7 +284,7 @@ r[:, 1] = np.cumsum(dy) # final ry position
 ```
 
 Finally, you can plot the path the particle took as it moved along its
-100 steps and its final location. 
+100 steps and its final location.
 
 ```{code-cell} ipython3
 plt.plot(r[:, 0 ], r[:, 1])
@@ -294,7 +297,7 @@ A curious result, even though we prescribed random motion, the final
 location did not end up back at the origin, where it started. __What if
 you looked at 50 particles?__ How many would end up back at the origin?
 Use a for-loop to calculate the position of 50 particles taking 100
-steps each. 
+steps each.
 
 ```{code-cell} ipython3
 num_particles = 50
@@ -318,7 +321,13 @@ Calculate the average location of the particles. What is the standard
 deviation?
 
 ```{code-cell} ipython3
+x_mean = np.mean(r_final[:,0])
+y_mean = np.mean(r_final[:,1])
+x_std = np.std(r_final[:,0])
+y_std = np.std(r_final[:,0])
 
+print('x mean: {:.4f}, x std: {:.4f}'.format(x_mean, x_std))
+print('y mean: {:.4f}, y std: {:.4f}'.format(y_mean, y_std))
 ```
 
 ## Exercise
@@ -330,6 +339,8 @@ Make a scaling equation to get uniformly random numbers between 10 and 20.
 _The scaling keeps the bin heights constant, but it changes the width and location of the bins in the histogram. Scaling to 10-20 shows a more extreme example._
 
 ```{code-cell} ipython3
+x=np.random.rand(100)
+plt.hist((10*x+10));
 ```
 
 ### Example 3: Determine uncertainty in failure load based on geometry uncertainty
@@ -413,7 +424,7 @@ factors = np.random.rand(10000,10)-1/2 # each row represents a part and each col
 
 Now, we have created 10,000 parts with 10 uniformly random effects between -1/2-1/2. 
 
-We sum the effects and look at the final part distribution. The x-axis is labeled "A.U." for arbitrary units, we are just assuming an effect of -1/2-1/2 for each of the 10 factors.  
+We sum the effects and look at the final part distribution. The x-axis is labeled "A.U." for arbitrary units, we are just assuming an effect of -1/2-1/2 for each of the 10 factors.
 
 ```{code-cell} ipython3
 dims = np.sum(factors,axis=1)
@@ -485,6 +496,17 @@ maximum $x_{end~max}>0$. The ratio
 $\frac{x_{end~min}<0~and~x_{end~max}>0}{number~of~needles} =
 \frac{2}{\pi}$ _for large values of $number~of~needles$_.
 
+```{code-cell} ipython3
+x = np.random.rand(100)
+theta = np.random.rand(100)*2*np.pi
+x_end1 = x - np.cos(theta)
+x_end2 = x + np.sin(theta)
+needles = np.logical_and(np.min([x_end1, x_end2], axis=0) < 0, 
+                         np.max([x_end1, x_end2], axis=0) > 0)
+num_needles = np.count_nonzero(needles)
+num_needles
+```
+
 __2.__ 100 steel rods are going to be used to support a 1000 kg structure. The
 rods will buckle when the load in any rod exceeds the [critical buckling
 load](https://en.wikipedia.org/wiki/Euler%27s_critical_load)
@@ -525,8 +547,39 @@ def montecarlo_buckle(E,r_mean,r_std,L,N=100):
     std_buckle_load: std dev buckling load of N rods under 1000*9.81/N-Newton load
     '''
     
-    return mean_buckle_load, std_buckle_load
+    r = rng.normal(loc = r_mean, scale = r_std, size = (N,))
+    Pcr = np.pi**3 * E * r**4 / (16 * L**2)
+    mean_buckle_load, std_buckle_load = np.mean(Pcr), np.std(Pcr)
+    
+    return mean_buckle_load, std_buckle_load, Pcr
 ```
+
+```{code-cell} ipython3
+meanBL, stdBL, Pcr = montecarlo_buckle(200e9, 0.01, 0.001, L = 5)
+print('The mean_buckle_load is {:.2f}N and the std_buckle load is {:.2f}N for L = 5m'.format(meanBL, stdBL))
+plt.hist(Pcr)
+plt.xlabel('Buckle Load (N)')
+plt.ylabel('Number of Rods')
+```
+
+```{code-cell} ipython3
+structure_load = 9.81*1000/100
+structure_load
+```
+
+```{code-cell} ipython3
+# z = (x - mean) / std
+# for a phi value of 0.025 (2.5%), the z score should be -1.96
+
+meanBL, stdBL, Pcr = montecarlo_buckle(200e9, 0.01, 0.001, L = 3)
+
+z = (98.1 - meanBL)/stdBL
+z
+```
+
+L should be approximately 3m for about 2.5% of the rods to reach critical buckling load and fail.
+
++++
 
 __3.__ Generate your own normal distribution using uniformly random numbers between -1/2 and 1/2. 
 
@@ -537,6 +590,53 @@ __b.__ What is the effect of changing the number of samples?
 *Hint: for a-b try plotting histograms of the results.*
 
 __c.__ How would you change the mean in your generated distribution?
+
++++
+
+My responses:\
+a. Changing the number of factors increases the range of the effect A.U.\
+b. Increasing the number of samples brings the distribution closer to a normal distribution. Fewer samples leads to a more jagged distribution.\
+c. I can change the mean by changing the -1/2 in the factors definition to another constant.
+
+```{code-cell} ipython3
+factors = np.random.rand(10000,10)-1/2
+
+dims = np.sum(factors,axis=1)
+
+plt.hist(dims,30)
+plt.xlabel('effect A.U.')
+plt.ylabel('number of parts')
+```
+
+```{code-cell} ipython3
+factors = np.random.rand(10000,1000)-1/2
+
+dims = np.sum(factors,axis=1)
+
+plt.hist(dims,30)
+plt.xlabel('effect A.U.')
+plt.ylabel('number of parts')
+```
+
+```{code-cell} ipython3
+factors = np.random.rand(100,100)-1/2
+
+dims = np.sum(factors,axis=1)
+
+plt.hist(dims,30)
+plt.xlabel('effect A.U.')
+plt.ylabel('number of parts')
+```
+
+```{code-cell} ipython3
+factors = np.random.rand(10000,50)-2
+
+dims = np.sum(factors,axis=1)
+
+plt.hist(dims,30)
+plt.xlabel('effect A.U.')
+plt.ylabel('number of parts')
+```
 
 ```{code-cell} ipython3
 

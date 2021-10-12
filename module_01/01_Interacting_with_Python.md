@@ -4,10 +4,10 @@ jupytext:
   text_representation:
     extension: .md
     format_name: myst
-    format_version: 0.12
-    jupytext_version: 1.6.0
+    format_version: 0.13
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -246,7 +246,11 @@ Use Python (as a calculator) to solve the following two problems:
 2. Suppose the cover price of a book is $\$ 24.95$, but bookstores get a $40\%$ discount. Shipping costs $\$3$ for the first copy and $75$ cents for each additional copy. What is the total wholesale cost for $60$ copies? Compare your answer with the solution up to 2 decimal numbers.
 
 ```{code-cell} ipython3
+(4/3)*3.14159*(6.65/2)**3
+```
 
+```{code-cell} ipython3
+60*(0.6*24.95)+3+0.75*59
 ```
 
 To reveal the answers, highlight the following line of text using the mouse:
@@ -299,7 +303,7 @@ y = 4.5
 Print the values of the variables `x` and `y`.
 
 ```{code-cell} ipython3
-
+print(x,y)
 ```
 
 Let's do some arithmetic operations with our new variables:
@@ -578,7 +582,11 @@ Throughout this course module, you will be drawing from the following references
     c. What is the result of the following logical operation, `volume>1000` (in inches^3)
 
 ```{code-cell} ipython3
-
+volume = 12.5*11*14
+avg_density = 31/volume
+print('Volume:', volume, 'in^3')
+print('Average density:', avg_density, 'lbs/in^3')
+print(volume>1000)
 ```
 
 2. Use the variables given below, `str1` and `str2`, and check the following 
@@ -594,6 +602,11 @@ Throughout this course module, you will be drawing from the following references
 ```{code-cell} ipython3
 str1 = 'Python'
 str2 = 'python'
+print(str1<str2)
+print(str1==str2)
+print(str1>str2)
+
+print(str1.lower()==str2.lower())
 ```
 
 3. The following code has an error, fix the error so that the correct result is returned:
@@ -611,7 +624,13 @@ else:
 ```
 
 ```{code-cell} ipython3
+x=1
+y=20
 
+if x<y and y==20:
+    print('y is 20 and x is less than y')
+else:
+    print('x is not less than y')
 ```
 
 4. Create a script that takes the clock hour in 24 hours and prints the clock hour with am or pm. 
@@ -624,6 +643,10 @@ if time > 12:
     print(time - 12, 'PM')
 elif time < 12:
     print(time, 'AM')
+elif time == 12:
+    print('12 PM')
+elif time == 0 or time == 24:
+    print('12 AM')
 ```
 
 ```{code-cell} ipython3

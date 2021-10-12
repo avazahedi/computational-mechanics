@@ -4,10 +4,10 @@ jupytext:
   text_representation:
     extension: .md
     format_name: myst
-    format_version: 0.12
-    jupytext_version: 1.6.0
+    format_version: 0.13
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -69,7 +69,11 @@ import matplotlib.pyplot as plt
 Calculate the terminal velocity for the given parameters, g=9.81 m/s$^2$, c=0.25 kg/m, m=60 kg.
 
 ```{code-cell} ipython3
-
+c=0.25 
+m=60
+g=9.81 
+v_terminal = np.sqrt(m*g/c)
+print(v_terminal)
 ```
 
 ```{code-cell} ipython3
@@ -96,6 +100,10 @@ def v_analytical(t,m,g,c):
     v_terminal=np.sqrt(m*g/c)
     v= v_terminal*np.tanh(g*t/v_terminal)
     return v
+```
+
+```{code-cell} ipython3
+
 ```
 
 Inside the curly brackets—the placeholders for the values you want to
@@ -192,7 +200,7 @@ Let's print the time, velocity (analytical) and velocity (numerical) to compare 
 
 ```{code-cell} ipython3
 print('time (s)|vel analytical (m/s)|vel numerical (m/s)')
-print('-----------------------------------------------')
+print('------------------------------------------------')
 for i in range(0,len(t)):
     print('{:7.1f} | {:18.2f} | {:15.2f}\n'.format(t[i],v_analytical(t[i],m,g,c),v_numerical[i]));
 ```
@@ -239,7 +247,15 @@ If you increase the number of time steps from 0 to 12 seconds what happens to v_
 What happens when you decrease the number of time steps?
 
 ```{code-cell} ipython3
-
+t = np.linspace(0,12,10)
+v_numerical=np.zeros(len(t));
+for i in range(1,len(t)):
+    v_numerical[i]=v_numerical[i-1]+((g-c/m*v_numerical[i-1]**2))*2;
+plt.plot(t,v_analytical(t,m,g,c),'-',label='analytical')
+plt.plot(t,v_numerical,'o-',label='numerical')
+plt.legend()
+plt.xlabel('time (s)')
+plt.ylabel('velocity (m/s)')
 ```
 
 ## Errors in Numerical Modeling
@@ -415,7 +431,12 @@ print(N/2,'*eps=',(s2-1))
 
 2. What is machine epsilon for a 32-bit floating point number?
 
-+++
+```{code-cell} ipython3
+eps = np.finfo('float64').eps
+sum = 2*eps + 1
+eps32 = np.finfo('float32').eps
+sum, eps32
+```
 
 ## Freefall Model (revisited)
 
@@ -430,7 +451,13 @@ function defined as `freefall`
 
 m=60 kg, c=0.25 kg/m
 
-+++
+```{code-cell} ipython3
+# m=60
+# c=0.25
+# def freefall(N):
+#     t = np.linspace(0,12,N)
+#     return t
+```
 
 ### Freefall example
 
@@ -516,9 +543,10 @@ First, solve for `n=2` steps, so t=[0,2]. We can time the solution to get a sens
 
 ```{code-cell} ipython3
 %%time
-n=5
+n=20
 
 v_analytical,v_numerical,t=freefall(n);
+v_analytical, v_numerical, t
 ```
 
 The block of code above assigned three variables from the function `freefall`. 
@@ -639,7 +667,6 @@ print('years=',year)
 print('population =', pop)
 ```
 
-
 ```{code-cell} ipython3
 print('average population changes 1900-1950, 1950-2000, 2000-2020')
 print((pop[1:] - pop[0:-1])/(year[1:] - year[0:-1]))
@@ -647,10 +674,54 @@ print('average growth of 1900 - 2020')
 print(np.mean((pop[1:] - pop[0:-1])/(year[1:] - year[0:-1])))
 ```
 
+```{code-cell} ipython3
+dpdt = (pop[1:]-pop[0:-1])/(year[1:]-year[0:-1])
+print('Average population growth dp/dt from 1900-1950, 1950-2000, and 2000-2020:', dpdt)
+k_g = (pop[1:] - pop[0:-1])/(((year[1:] - year[0:-1]))*pop[0:-1])
+print('Average growth rates k_g from 1900-1950, 1950-2000, and 2000-2020', k_g)
+```
+
+```{code-cell} ipython3
+def population(N):
+    '''  
+    help file for population(N)
+    computes the population at t years
+    given a growth factor k_g = 0.013 [1/years]
+    Arguments:
+    ----------
+    N : number of timesteps between 1900 and 2020
+    Returns:
+    --------
+    pop_analytical : the 32-bit floating point "true" solution
+    pop_numerical : the 32-bit approximation of the population
+    t : the timesteps between years 1900 and 2020, divided into N steps
+    '''
+    t=np.linspace(1900,2020,N)
+    kg = 0.013
+    A=1578000000/(np.exp(0.013*1900))
+
+    pop_analytical = A*np.exp(kg*t);
+    pop_numerical=np.zeros(len(t))
+    pop_numerical[0]=1578000000
+    delta_time =np.diff(t)
+    for i in range(0,len(t)-1):
+        pop_numerical[i+1]=pop_numerical[i]+kg*pop_numerical[i]*delta_time[i];
+    
+    return pop_analytical.astype(np.float32), pop_numerical.astype(np.float32), t.astype(np.float32)
+
+pop_analytical, pop_numerical, t = population(7)
+plt.plot(t,pop_analytical,'-',label='analytical')
+plt.plot(t,pop_numerical,'o-',label='numerical')
+plt.legend()
+plt.xlabel('time (s)')
+plt.ylabel('population')
+```
+
 __d.__ As the number of time steps increases, the Euler approximation approaches the analytical solution, not the measured data. The best-case scenario is that the Euler solution is the same as the analytical solution.
 
+```{code-cell} ipython3
 
-+++
+```
 
 2. In the freefall example you used smaller time steps to decrease the **truncation error** in our Euler approximation. Another way to decrease approximation error is to continue expanding the Taylor series. Consider the function f(x)
 
@@ -682,5 +753,46 @@ def exptaylor(x,n):
 ```
 
 ```{code-cell} ipython3
+print(exptaylor(1,2))
+print(np.abs((exptaylor(1,2)-np.exp(1))/np.exp(1)))
+```
 
+```{code-cell} ipython3
+%%time
+exptaylor(1,2)
+```
+
+```{code-cell} ipython3
+%%time
+exptaylor(1,10)
+```
+
+__b.__ I would estimate a 100,000-order series to take something like 2 hours to run.
+
+```{code-cell} ipython3
+# n = np.arange(1, 100, 1)
+# N = len(n)
+# error = np.zeros(N, dtype = np.float32)    # initialize an N-valued array of relative errors
+
+# for i in range(0,N):
+#     taylor_an = np.exp(1)
+#     taylor_num = exptaylor(1, i) # return the analytical and numerical solutions to your equation
+#     error[i] = np.abs((taylor_num-taylor_an)/taylor_an) #calculate relative error in taylor expansion
+
+    
+# plt.loglog(n, error,'o')
+# plt.xlabel('Taylor series expansion order (n)')
+# plt.ylabel('relative error')
+# plt.title('Truncation and roundoff error accumulation in log-log plot')
+```
+
+```{code-cell} ipython3
+exact = np.exp(1)
+N = 30
+error = np.zeros(N)
+for i in range(N):
+    error[i] = np.abs((exptaylor(1, i) - exact)/exact)
+plt.semilogy(np.arange(N), error)
+plt.xlabel('Taylor series expansion order')
+plt.ylabel('relative error')
 ```
