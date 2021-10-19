@@ -192,8 +192,8 @@ Now, you can try your hand at predicting stock prices on your own stock. Choose 
 3. Create random variables
 4. Generate random walk for _choose your own_ stock opening price
 
-Here are the list of stocks in this dataset:
-'A', 'AAL', 'AAP', 'AAPL', 'ABBV', 'ABC', 'ABT', 'ACN', 'ADBE',
+Here are the list of stocks in this dataset: (uncomment code to see)
+<!-- 'A', 'AAL', 'AAP', 'AAPL', 'ABBV', 'ABC', 'ABT', 'ACN', 'ADBE',
        'ADI', 'ADM', 'ADP', 'ADS', 'ADSK', 'AEE', 'AEP', 'AES', 'AET',
        'AFL', 'AGN', 'AIG', 'AIV', 'AIZ', 'AJG', 'AKAM', 'ALB', 'ALK',
        'ALL', 'ALLE', 'ALXN', 'AMAT', 'AME', 'AMG', 'AMGN', 'AMP', 'AMT',
@@ -248,7 +248,91 @@ Here are the list of stocks in this dataset:
        'VTR', 'VZ', 'WAT', 'WBA', 'WDC', 'WEC', 'WFC', 'WFM', 'WHR',
        'WLTW', 'WM', 'WMB', 'WMT', 'WRK', 'WU', 'WY', 'WYN', 'WYNN',
        'XEC', 'XEL', 'XL', 'XLNX', 'XOM', 'XRAY', 'XRX', 'XYL', 'YHOO',
-       'YUM', 'ZBH', 'ZION', 'ZTS'
+       'YUM', 'ZBH', 'ZION', 'ZTS' -->
+
+```{code-cell} ipython3
+# part 1
+
+data = pd.read_csv('../data/nyse-data.csv')
+data['date'] = pd.to_datetime(data['date'])
+
+usb_data = data[data['symbol'] == 'USB']
+
+plt.plot(usb_data['date'], usb_data['open'])
+plt.xlabel('date')
+plt.ylabel('opening price (\$)');
+```
+
+```{code-cell} ipython3
+dprice = np.diff(usb_data['open'])
+plt.plot(usb_data['date'][1:], dprice)
+plt.xlabel('date')
+plt.ylabel('change in opening price (\$/day)');
+```
+
+```{code-cell} ipython3
+# part 2
+
+mean_dprice = np.mean(dprice)
+std_dprice = np.std(dprice)
+x = np.linspace(-4, 4)
+from scipy import stats
+price_pdf = stats.norm.pdf(x, loc = mean_dprice, scale = std_dprice)
+plt.hist(dprice, 50, density=True)
+plt.plot(x, price_pdf)
+plt.title('USB changes in price over 4 years\n'+
+         'avg: \${:.2f} stdev: \${:.2f}'.format(mean_dprice, std_dprice));
+```
+
+```{code-cell} ipython3
+# part 3
+
+rng = default_rng(42)
+N_models = 100
+dprice_model = rng.normal(size = (len(usb_data), N_models), loc = 0.02, scale = 0.45)
+# loc = mean, scale = standard deviation
+
+plt.hist(dprice, 50, density=True, label = 'NYSE data')
+plt.plot(x, price_pdf)
+plt.hist(dprice_model[:, 0], 50, density = True, 
+         histtype = 'step', 
+         linewidth = 3, label = 'model prediction 1')
+plt.title('USB changes in price over 7 years\n'+
+         'avg: \${:.2f} stdev: \${:.2f}'.format(mean_dprice, std_dprice))
+plt.legend();
+```
+
+```{code-cell} ipython3
+# part 4
+
+price_model = np.cumsum(dprice_model, axis = 0) + usb_data['open'].values[0]
+
+plt.plot(usb_data['date'], price_model, alpha = 0.3);
+
+plt.plot(usb_data['date'], usb_data['open'], c = 'k', label = 'NYSE data')
+plt.xlabel('date')
+plt.ylabel('opening price (\$)');
+```
+
+```{code-cell} ipython3
+price_model_avg = np.mean(price_model, axis = 1)
+price_model_std = np.std(price_model, axis = 1)
+
+plt.plot(usb_data['date'], price_model, alpha = 0.3);
+
+plt.plot(usb_data['date'], usb_data['open'], c = 'k', label = 'NYSE data')
+plt.xlabel('date')
+plt.ylabel('opening price (\$)');
+
+skip = 100
+plt.errorbar(usb_data['date'][::skip], price_model_avg[::skip],
+             yerr = price_model_std[::skip], 
+             fmt = 'o',
+             c = 'r', 
+             label = 'model result', 
+            zorder = 3);
+plt.legend();
+```
 
 ```{code-cell} ipython3
 

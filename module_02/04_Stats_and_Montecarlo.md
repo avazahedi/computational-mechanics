@@ -135,8 +135,8 @@ def montecarlopi(N):
     '''
     
 
-    x = rng.random(N,1);
-    y = rng.random(N,1);
+    x = np.random.rand(N,1);
+    y = np.random.rand(N,1);
     R=np.sqrt(x**2+y**2); # compute radius
     num_in_circle=sum(R<1);
     total_num_pts =len(R);
@@ -491,8 +491,6 @@ num_needles = np.count_nonzero(needles)
 num_needles
 ```
 
-__2.__ 100 steel rods are going to be used to support a 1000 kg structure. The
-=======
 __2.__ Build a random walk data set with steps between $dx = dy =
 -1/2~to~1/2~m$. If 100 particles take 10 steps, calculate the number of
 particles that move further than 0.5 m. 
@@ -503,8 +501,28 @@ _Bonus: Can you do the work without any `for`-loops? Change the size of
 ```{code-cell} ipython3
 rng = default_rng()
 N_steps = 10
-dx = rng.random(N_steps) - 0.5
-dy = rng.random(N_steps) - 0.5
+num_particles = 100
+r_final = np.zeros((num_particles, 2))
+count_halfm = 0
+
+# dist = np.sqrt(dx**2 + dy**2)
+for i in range(0, num_particles):
+    dx = rng.random(N_steps) - 0.5
+    dy = rng.random(N_steps) - 0.5
+
+    r = np.zeros((N_steps, 2))
+
+    r[:, 0] = np.cumsum(dx)
+    r[:, 1] = np.cumsum(dy)
+    r_final[i, :] = r[-1, :]
+
+    plt.plot(r[:, 0 ], r[:, 1], alpha = 0.2)
+plt.plot(r_final[:, 0], r_final[:, 1], 'o', markersize = 10)
+
+for i,j in r_final:
+    if np.sqrt(i**2 + j**2) > 0.5:
+        count_halfm += 1
+print('Number of particles that move further than 0.5m: {} particles'.format(count_halfm))
 ```
 
 __3.__ 100 steel rods are going to be used to support a 1000 kg structure. The
