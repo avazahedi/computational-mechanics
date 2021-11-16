@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.10.3
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -61,14 +61,13 @@ def eulerstep(state, rhs, dt):
     return next_state
 ```
 
+```{raw-cell}
 ## Spring-mass system
 
 A prototypical mechanical system is a mass $m$ attached to a spring, in the simplest case without friction. The elastic constant of the spring, $k$, determines the restoring force it will apply to the mass when displaced by a distance $x$. The system then oscillates back and forth around its position of equilibrium.
 
-<img src="../images/spring-mass.png" style="width: 400px;"/> 
-
-
-+++
+<img src="../images/spring-mass.png" style="width: 400px;"/>
+```
 
 ## Simple spring-mass system, without friction.
 Newton's law applied to the friction-less spring-mass system is:
@@ -214,7 +213,21 @@ time. The solution does improve when you reduce the time increment `dt`
 (as it should), but the amplitude still displays unphysical growth for
 longer simulations.
 
-+++
+```{code-cell} ipython3
+dt = 20*period/2000
+for i in range(N-1):
+    num_sol[i+1] = eulerstep(num_sol[i], springmass, dt)
+
+x_an = x0*np.cos(w * t)
+
+fig = plt.figure(figsize=(6,4))
+
+plt.plot(20*t, num_sol[:, 0], linewidth=2, linestyle='--', label='Numerical solution')
+plt.plot(20*t, x_an, linewidth=1, linestyle='-', label='Analytical solution')
+plt.xlabel('Time [s]')
+plt.ylabel('$x$ [m]')
+plt.title('Spring-mass system with Euler\'s method (dashed line).\n');
+```
 
 ## Euler-Cromer method
 
@@ -558,7 +571,7 @@ $y_{i+1}=y_{i}+f(t_{i},y_{i}) \Delta t$
 $y_{i+1}=y_{i}+
 \frac{f(t_{i},y_{i})+f(t_{i+1},y_{i+1})}{2} \Delta t$
 
-The error is $ error \propto \Delta t^2.$ This is the same convergence as the Modified Euler's method. Let's compare the two methods. 
+The error is $ error \propto \Delta t^2.$ This is the same convergence as the Modified Euler's method. Let's compare the two methods.
 
 +++ {"slideshow": {"slide_type": "subslide"}}
 
@@ -576,9 +589,7 @@ This extra step introduces the topic of solving a nonlinear problem with
 a computer. How can you solve an equation if the value you want is also
 part of our function? You'll take a look at methods to solve this next
 module, but for now lets set a tolerance `etol` for the _implicit_ Heun
-method and see what the resulting solution is. 
-
-
+method and see what the resulting solution is.
 
 ```{code-cell} ipython3
 def heun_step(state,rhs,dt,etol=0.000001,maxiters = 100):
@@ -613,7 +624,7 @@ def heun_step(state,rhs,dt,etol=0.000001,maxiters = 100):
 
 The __benefit__ of an implicit solution is that it is a __stable__ solution. When you solve a set of differential equations, many times it may not be apparent what time step to choose. If you use an _implicit_ integration method, then it may converge at the same rate as an _explicit_ method, but it will always provide bounded errors. 
 
-Consider the spring-mass equation if timesteps are large, in this case you have 10 steps/time period, then the second order Runge-Kutta that you defined above has the same increasing error as the Euler method. 
+Consider the spring-mass equation if timesteps are large, in this case you have 10 steps/time period, then the second order Runge-Kutta that you defined above has the same increasing error as the Euler method.
 
 ```{code-cell} ipython3
 ---
@@ -664,11 +675,13 @@ plt.legend();
 
 ## Discussion
 
-Change the number of steps per time period in the above solutions for the second order Runge Kutta and the implicit Heun's method. Why do you think the implicit method does not have an increasing magnitude of oscillation? 
+Change the number of steps per time period in the above solutions for the second order Runge Kutta and the implicit Heun's method. Why do you think the implicit method does not have an increasing magnitude of oscillation?
 
-```{code-cell} ipython3
++++
 
-```
+RK2 depends on previous values in a way such that small errors blow up over time. Heun's method, however, corrects itself with the actual derivative at the point, so it doesn't retain old errors and blow up.
+
++++
 
 ## What you've learned
 
@@ -699,10 +712,65 @@ Change the number of steps per time period in the above solutions for the second
 1. Show that the implicit Heun's method has the same second order convergence as the Modified Euler's method. _Hint: you can use the same code from above to create the log-log plot to get the error between $2\cos(\omega t)$ and the `heun_step` integration. Use the same initial conditions x(0) = 2 m and v(0)=0m/s and the same RHS function, `springmass`._
 
 ```{code-cell} ipython3
+w = 2
+period = 2*np.pi/w
+dt = period/10  # time intervals per period 
+T = 8*period   # simulation time, in number of periods
+N = round(T/dt)
 
+print('The number of time steps is {}.'.format( N ))
+print('The time increment is {}'.format( dt ))
+
+# time array
+t = np.linspace(0, T, N)
+
+dt_values = np.array([period/200,period/400,period/1000])
+
+x0 = 2    # initial position
+v0 = 0    # initial velocity
+
+#initialize solution array
+num_heun = np.zeros([N,2])
+num_rk2 = np.zeros([N,2])
+
+#Set intial conditions
+num_heun[0,0] = x0
+num_heun[0,1] = v0
+
+for j, dt in enumerate(dt_values):    
+    
+    num_sol = np.zeros([N,2])
+    
+    #Set intial conditions
+    num_sol[0,0] = x0
+    num_sol[0,1] = v0
+    
+    for i in range(N-1):
+        num_sol[i+1] = heun_step(num_sol[i], springmass, dt)
+
+    num_sol_time[j] = num_sol.copy()
+
+error_values = np.empty_like(dt_values)
+
+for j, dt in enumerate(dt_values):
+    
+    error_values[j] = get_error(num_sol_time[j], T)
 ```
 
-<img src="../images/damped-spring.png" style="width: 400px;"/> 
+```{code-cell} ipython3
+# plot of convergence for Heun's method
+fig = plt.figure(figsize=(6,6))
+
+plt.loglog(dt_values, error_values, 'ko-')
+plt.loglog(dt_values, 10000*dt_values**2, 'k:')
+plt.grid(True)
+plt.axis('equal')
+plt.xlabel('$\Delta t$')
+plt.ylabel('Error')
+plt.title('Convergence of Heun\'s method (dotted line: slope 2)\n');
+```
+
+<img src="../images/damped-spring.png" style="width: 400px;"/>
 
 +++
 
@@ -731,14 +799,17 @@ def smd(state):
     
     Returns 
     -------
-    derivs: array of two derivatives [v, zeta*w*v - w*w*x]^T
+    derivs: array of two derivatives [v, -zeta*w*v - w*w*x]^T
     '''
-    ## your work here ##
+    
+    w = 2  # rad/s
+    zeta = 0.2 
+    derivs = np.array([state[1], -zeta*w*state[1] - w**2*state[0]])
     
     return derivs
 ```
 
-3. Use three methods to integrate your `smd` function for 3 time periods of oscillation ( $t=0...6\pi$ ) and initial conditions x(0)=2 m and v(0)=0 m/s. Plot the three solutions on one graph with labels. 
+3. Use three methods to integrate your `smd` function for 3 time periods of oscillation ( $t=0...6\pi/w$ ) and initial conditions x(0)=2 m and v(0)=0 m/s. Plot the three solutions on one graph with labels. 
 
 a. Euler integration
 
@@ -747,6 +818,45 @@ b. second order Runge Kutta method (modified Euler method)
 c. the implicit Heun's method
 
 How many time steps does each method need to converge to the same results? _Remember that each method has a certain convergence rate_
+
+```{code-cell} ipython3
+w = 2
+period = 2*np.pi/w
+T = 3*period    # solve for 3 periods
+# N = round(T/dt)
+N = 2500
+dt = T/N
+t = np.linspace(0, T, N)
+x0 = 2 # m
+v0 = 0 # m/s
+
+euler_sol = np.zeros([N,2])
+rk_sol = np.zeros([N,2])
+heun_sol = np.zeros([N,2])
+euler_sol[0,0] = x0
+rk_sol[0,0] = x0
+heun_sol[0,0] = x0
+euler_sol[0,1] = v0
+rk_sol[0,1] = v0
+heun_sol[0,1] = v0
+for i in range(N-1):
+    euler_sol[i+1] = eulerstep(euler_sol[i], smd, dt)
+    rk_sol[i+1] = rk2_step(rk_sol[i], smd, dt)
+    heun_sol[i+1] = heun_step(heun_sol[i], smd, dt)
+
+# plot solution for each method
+fig = plt.figure(figsize=(6,4))
+plt.plot(t, euler_sol[:, 0], linewidth=2, linestyle='--', label='Euler\'s method')
+plt.plot(t, rk_sol[:, 0], linewidth=2, linestyle='-', label='RK2')
+plt.plot(t, heun_sol[:, 0], linewidth=2, linestyle=':', label='Heun\'s method')
+plt.xlabel('Time [s]')
+plt.ylabel('$x$ [m]')
+plt.title('Spring-mass-damper system with different methods.\n');
+plt.legend(loc='best', bbox_to_anchor=(1, 0., 0.5, 0.5))
+```
+
+Euler's method needs about 2500 time steps to converge. </br>
+RK2 and Heun's method need about 150 time steps to converge. </br>
 
 ```{code-cell} ipython3
 

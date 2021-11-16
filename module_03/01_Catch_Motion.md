@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.10.3
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -162,11 +162,22 @@ get the standard deviation as an indication of our error in the
 mouse-click captures.
 
 ```{code-cell} ipython3
-np.array(coords)[:,0]
+e1_coords = [[797.9578278776887, 106.00974917721442],
+ [797.9578278776887, 225.8149439824092],
+ [797.9578278776887, 351.4642946317598],
+ [797.9578278776887, 482.9578011252663],
+ [795.035749955611, 608.6071517746169],
+ [792.113672033533, 743.0227361902014],
+ [795.035749955611, 859.9058530733182],
+ [797.9578278776887, 979.711047878513]]
 ```
 
 ```{code-cell} ipython3
-np.array(coords)[:,0].std()
+np.array(e1_coords)[:,0]
+```
+
+```{code-cell} ipython3
+np.array(e1_coords)[:,0].std()
 ```
 
 Depending how shaky _your_ hand was, you may get a different value, but you got a standard deviation of about one pixel. Pretty good!
@@ -176,7 +187,7 @@ Depending how shaky _your_ hand was, you may get a different value, but you got 
 Now, let's grab all the second elements of the coordinate pairs, corresponding to the $y$ coordinates, i.e., the vertical positions of the white lines on the video frame.
 
 ```{code-cell} ipython3
-y_lines = np.array(coords)[:,1]
+y_lines = np.array(e1_coords)[:,1]
 y_lines
 ```
 
@@ -235,6 +246,18 @@ Click on the locations of the _ghost_ ball locations in the image above to popul
 coords # view the captured ball positions
 ```
 
+```{code-cell} ipython3
+e2_coords = [[721.9838019036629, 66.26947160200643],
+ [721.9838019036629, 115.94479627733108],
+ [721.9838019036629, 177.30843264096734],
+ [724.9058798257408, 256.20453653707136],
+ [721.9838019036629, 338.0227183552531],
+ [727.8279577478188, 451.9837573162921],
+ [727.8279577478188, 568.8668741994089],
+ [721.9838019036629, 717.892848225383],
+ [721.9838019036629, 875.6850560175908]]
+```
+
 Scale the vertical displacements of the falling ball as explained above (to get distance in meters), then use the known time between flashes of the strobe light, $1/16.8\rm{s}$, to compute estimates of the velocity and acceleration of the ball at every captured instant, using:
 
 \begin{equation}
@@ -242,7 +265,7 @@ v_i = \frac{y_{i+1}-y_i}{\Delta t}, \qquad a_i = \frac{v_{i+1}-v_i}{\Delta t}
 \end{equation}
 
 ```{code-cell} ipython3
-y_coords = np.array(coords)[:,1]
+y_coords = np.array(e2_coords)[:,1]
 delta_y = (y_coords[1:] - y_coords[:-1]) *0.25 / gap_lines.mean()
 ```
 
@@ -335,7 +358,21 @@ coords
 ```
 
 ```{code-cell} ipython3
-y_lines2 = np.array(coords)[:,1]
+e3_coords = [[294.3276142690373, 110.61110643408756],
+ [298.9253154184627, 161.1858190777658],
+ [298.9253154184627, 216.3582328708692],
+ [298.9253154184627, 269.23179608926],
+ [298.9253154184627, 324.4042098823635],
+ [296.62646484375, 374.97892252604163],
+ [296.62646484375, 427.85248574443244],
+ [298.9253154184627, 483.02489953753593],
+ [298.9253154184627, 526.7030604570762],
+ [296.62646484375, 588.7720259743176],
+ [296.62646484375, 641.6455891927084]]
+```
+
+```{code-cell} ipython3
+y_lines2 = np.array(e3_coords)[:,1]
 y_lines2
 ```
 
@@ -382,13 +419,39 @@ widgets.interact(catchclick, frame=selector);
 coords # view the pixel coordinates of the projectile
 ```
 
+```{code-cell} ipython3
+e4_coords = [
+    [324.21267174030174, 98.38888655037715],
+ [349.5000280621408, 98.38888655037715],
+ [370.18968323455454, 98.38888655037715],
+ [418.4655453035201, 109.88313942394029],
+ [439.15520047593395, 116.77969114807831],
+ [464.442556797773, 137.46934632049204],
+ [487.4310625448994, 144.36589804462994],
+ [512.7184188667385, 155.8601509181932],
+ [531.1092234644397, 174.25095551589436],
+ [563.2931315104167, 192.64176011359552],
+ [579.3850855334052, 206.43486356187134],
+ [600.074740705819, 229.42336930899785],
+ [627.6609476023707, 245.51532333198634],
+ [646.0517522000719, 273.1015302285381],
+ [666.7414073724857, 293.7911854009518],
+ [701.2241659931753, 323.6762428722162],
+ [719.6149705908765, 344.36589804463006],
+ [747.2011774874281, 378.8486566653197],
+ [765.5919820851293, 413.33141528600936],
+ [793.178188981681, 440.91762218256105],
+ [820.7643958782328, 477.6992313779634],
+ [836.8563499012213, 498.38888655037715]]
+```
+
 Now, convert the positions in pixels to meters, using your scaling for
 this video, and save the $x$ and $y$ coordinates to new arrays. Below,
 you plot the ball positions that you captured.
 
 ```{code-cell} ipython3
-x = np.array(coords)[:,0] *0.1 / gap_lines2.mean()
-y = np.array(coords)[:,1] *0.1 / gap_lines2.mean()
+x = np.array(e4_coords)[:,0] *0.1 / gap_lines2.mean()
+y = np.array(e4_coords)[:,1] *0.1 / gap_lines2.mean()
 ```
 
 ```{code-cell} ipython3
@@ -434,6 +497,12 @@ np.savez('../data/projectile_coords.npz',t=t,x=x,y=-y)
 
 * What did you get for the $x$ and $y$ accelerations? What did your colleagues get?
 * Do the results make sense to you? Why or why not?
+
++++
+
+x acceleration: -3.12 <br/>
+y acceleration: 7.01 <br/>
+These do not make sense because we expect x acceleration to be zero and y acceleration to be -9.81m/s^2
 
 +++
 
@@ -512,6 +581,12 @@ plt.plot(ay);
 
 +++
 
+The acceleration is exponentially increasing. <br/>
+As the y coordinate increases, the magnitude of acceleration decreases. <br/>
+This could possibly be due to air resistance.
+
++++
+
 ## What you've learned
 
 * Work with images and videos in Python using `imageio`.
@@ -555,8 +630,44 @@ plt.plot(ay);
     d. Plot the polyfit lines for velocity and position (2 figures) with the finite difference velocity data points and positions. Which lines look like better e.g. which line fits the data?
 
 ```{code-cell} ipython3
+%matplotlib
+npz_coords = np.load('../data/projectile_coords.npz')
+t = npz_coords['t']
+x = npz_coords['x']
+y = npz_coords['y']
 
+dt = t[1]-t[0]
+vx_fd = (x[1:] - x[0:-1]) / dt
+vy_fd = (y[1:] - y[0:-1]) / dt
+
+t_adj = t[:-1]
+
+# returns slope, intercept
+vx1 = np.polyfit(t_adj, vx_fd, 1)
+vy1 = np.polyfit(t_adj, vy_fd, 1)
+print('First order \nx acceleration = {:.2f} m/s^2 \ny acceleration = {:.2f} m/s^2 \n'.format(vx1[0], vy1[0]))
+
+# returns x^2 coeff, x coeff, intercept
+x2 = np.polyfit(t, x, 2)
+y2 = np.polyfit(t, y, 2)
+print('Second order \nx acceleration = {:.2f} m/s^2 \ny acceleration = {:.2f} m/s^2'.format(2*x2[0], 2*y2[0]))
+
+plt.figure(1)
+plt.plot(t, vx1[0]*t+vx1[1])
+plt.plot(t_adj, vx_fd)
+plt.plot(t, vy1[0]*t+vy1[1])
+plt.plot(t_adj, vy_fd)
+
+plt.figure(2)
+plt.plot(t, x)
+plt.plot(t, x2[0]*t**2+x2[1]*t+x2[2])
+plt.plot(t, y)
+plt.plot(t, y2[0]*t**2+y2[1]*t+y2[2])
 ```
+
+The second-order polyfit fits the data better.
+
++++
 
 2. Not only can you measure acceleration of objects that you track, you can look at other physical constants like [coefficient of restitution](https://en.wikipedia.org/wiki/Coefficient_of_restitution), $e$ . 
 
@@ -564,13 +675,54 @@ plt.plot(ay);
      
      $e = -\frac{v_{y}'}{v_{y}}$ . 
      
-     Where $v_y'$ is y-velocity perpendicular to the ground after impact and $v_y$ is the y-velocity after impact. 
+     Where $v_y'$ is y-velocity perpendicular to the ground after impact and $v_y$ is the y-velocity before impact. 
      
      a. Calculate $v_y$ and plot as a function of time from the data `'../data/fallingtennisball02.txt'`
      
      b. Find the locations when $v_y$ changes rapidly i.e. the impact locations. Get the maximum and minimum velocities closest to the impact location. _Hint: this can be a little tricky. Try slicing the data to include one collision at a time before using  the `np.min` and `np.max` commands._
      
      c. Calculate the $e$ for each of the three collisions
+
+```{code-cell} ipython3
+%matplotlib
+tennisball_coords = np.loadtxt('../data/fallingtennisball02.txt')
+t, y = np.loadtxt('../data/fallingtennisball02.txt', usecols=[0,1], unpack=True)
+delta_y = (y[1:] - y[:-1])
+dt = t[1]-t[0]
+vy = delta_y / dt
+t_adj = t[1:]
+
+plt.figure(1)
+plt.plot(t_adj, vy)
+plt.xlabel('time')
+plt.ylabel('y velocity')
+```
+
+```{code-cell} ipython3
+# 3 collisions, want min and max velocity around each
+c1_min = np.min(vy)
+min_index_1 = np.where(vy==c1_min)
+c1_max = np.max(vy)
+max_index_1 = np.where(vy==c1_max)
+# print(c1_min, c1_max)
+e1 = -c1_max/c1_min
+
+c2_time_idx = [i for i,t in enumerate(t_adj) if t > 1.3 and t < 1.7]
+vy2 = [v for i,v in enumerate(vy) if i in c2_time_idx]
+c2_min = np.min(vy2)
+c2_max = np.max(vy2)
+# print(c2_min, c2_max)
+e2 = -c2_max/c2_min
+
+c3_time_idx = [i for i,t in enumerate(t_adj) if t > 1.8 and t < 2.2]
+vy3 = [v for i,v in enumerate(vy) if i in c3_time_idx]
+c3_min = np.min(vy3)
+c3_max = np.max(vy3)
+# print(c3_min, c3_max)
+e3 = -c3_max/c3_min
+
+print('Coefficient of restitution e for each collision:\nCollision 1: {:.3f}\nCollision 2: {:.3f}\nCollision 3: {:.3f}'.format(e1, e2, e3))
+```
 
 ```{code-cell} ipython3
 

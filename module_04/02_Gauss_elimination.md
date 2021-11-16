@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.10.3
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -110,6 +110,12 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5));
 
 The intersection between the equations lines 1 and 2 seems to occur everywhere. Why is there still a __single__ solution?
 
++++
+
+They are very close everywhere, however they actually intersect at only one point. Still, this almost-linearly-dependent state can cause issues.
+
++++
+
 ## 3 Degrees of Freedom
 
 For a $3\times3$ matrix, the solution is the intersection of the 3 planes.
@@ -162,9 +168,9 @@ Create a set of 3 equations and 3 unknowns where two of the equations are multip
 ```{code-cell} ipython3
 X,Y = np.meshgrid(np.linspace(-1,1,10),np.linspace(0,3,10))
 # Define your Z1,Z2,Z3 based upon your chosen equations
-# Z1
-# Z2
-# Z3
+Z1 = 1-10*X-2*Y
+Z2 = 2*Z1
+Z3 = 4+X-Y
 fig = plt.figure(figsize=(7,6))
 ax = fig.add_subplot(111, projection='3d')
 
@@ -499,7 +505,7 @@ U=np.array([[-7,3,0],[0,-16,12],[0,0,-9]])
 
 Use the `@`-symbol to confirm LU = A. 
 
-`L@U` 
+`L@U`
 
 ```{code-cell} ipython3
 
@@ -549,7 +555,7 @@ y_{1} \\
 y_{2} \\
 y_{3}\end{array}\right]$
 
-You can solve these equations without Gauss elimination. You just need to use a __forward substitution__ for $\mathbf{Ly}=\mathbf{b}$ and a __backward substitution__ for $\mathbf{Ux}=\mathbf{y}$. 
+You can solve these equations without Gauss elimination. You just need to use a __forward substitution__ for $\mathbf{Ly}=\mathbf{b}$ and a __backward substitution__ for $\mathbf{Ux}=\mathbf{y}$.
 
 ```{code-cell} ipython3
 def solveLU(L,U,b):
@@ -614,7 +620,6 @@ In the last two comparisons, it is not always immediately obvious that the LU-de
 * $x_1=[0...50]~mg/m^3$
 
 * $x_2=[0...50]~mg/m^3$
-
 
 ```{code-cell} ipython3
 N=51 # meshgrid is NxN
@@ -850,7 +855,7 @@ a. $\left[ \begin{array}{cccc}
 2/3 \end{array} \right]\neq
 \left[ \begin{array}{c}
 2 \\
-1 \end{array} \right]$ 
+1 \end{array} \right]$
 
 ```{code-cell} ipython3
 Aa@np.array([0,2/3])
@@ -868,7 +873,7 @@ x_{2} \end{array} \right]=
 1.0000 \\
 2 \end{array} \right]$
 
-and the solution changes to $x_1=1/3$ and $x_2=2/3$. This solution satisfies our initial equations. 
+and the solution changes to $x_1=1/3$ and $x_2=2/3$. This solution satisfies our initial equations.
 
 ```{code-cell} ipython3
 Aa = np.array([[1,1],[1e-19,3]])
@@ -905,7 +910,7 @@ print(aug_b)
 
 ## Exercise
 
-Swap row 1 with either row 2 or row 3. What is the solution for `x_b` now? Show that if you plug in the solution for $[x_1,~x_2,~x_3]$ into the unpivoted $\mathbf{A}$ that the result is $[8,~-3,~5]$. 
+Swap row 1 with either row 2 or row 3. What is the solution for `x_b` now? Show that if you plug in the solution for $[x_1,~x_2,~x_3]$ into the unpivoted $\mathbf{A}$ that the result is $[8,~-3,~5]$.
 
 ```{code-cell} ipython3
 
@@ -1037,7 +1042,7 @@ a. Create the system of equations, $\mathbf{Ax}=\mathbf{b}$, when $\alpha=35^o$,
 
 b. Solve for the $\mathbf{LU}$ decomposition of $\mathbf{A}$. 
 
-c. Use the $\mathbf{LU}$ solution to solve for the tension in bar 1 $(P_1)$ every 10 N values of force, F, between 100 N and 1100 N. Plot $P_1~vs~F$. 
+c. Use the $\mathbf{LU}$ solution to solve for the tension in bar 1 $(P_1)$ every 10 N values of force, F, between 100 N and 1100 N. Plot $P_1~vs~F$.
 
 ```{code-cell} ipython3
 
@@ -1072,7 +1077,7 @@ a. Create the system of equations, $\mathbf{Ax}=\mathbf{b}$, when $\alpha=35^o$,
 
 b. Solve for the $\mathbf{PLU}$ decomposition of $\mathbf{A}$. 
 
-c. Use the $\mathbf{PLU}$ solution to solve for the tension in bar 1 $(P_1)$ every 10 N values of force, F, between 100 N and 1100 N. Plot $P_1~vs~F$. 
+c. Use the $\mathbf{PLU}$ solution to solve for the tension in bar 1 $(P_1)$ every 10 N values of force, F, between 100 N and 1100 N. Plot $P_1~vs~F$.
 
 ```{code-cell} ipython3
 
