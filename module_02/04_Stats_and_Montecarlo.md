@@ -324,8 +324,12 @@ Make a scaling equation to get uniformly random numbers between 10 and 20.
 _The scaling keeps the bin heights constant, but it changes the width and location of the bins in the histogram. Scaling to 10-20 shows a more extreme example._
 
 ```{code-cell} ipython3
+<<<<<<< HEAD
 x=np.random.rand(100)
 plt.hist((10*x+10));
+=======
+
+>>>>>>> 8789a7efef5b6178f6e4a1f05e69babdb1438fc4
 ```
 
 ### Example 3: Determine uncertainty in failure load based on geometry uncertainty
@@ -501,6 +505,7 @@ _Bonus: Can you do the work without any `for`-loops? Change the size of
 ```{code-cell} ipython3
 rng = default_rng()
 N_steps = 10
+<<<<<<< HEAD
 num_particles = 100
 r_final = np.zeros((num_particles, 2))
 count_halfm = 0
@@ -523,6 +528,10 @@ for i,j in r_final:
     if np.sqrt(i**2 + j**2) > 0.5:
         count_halfm += 1
 print('Number of particles that move further than 0.5m: {} particles'.format(count_halfm))
+=======
+dx = rng.random(N_steps) - 0.5
+dy = rng.random(N_steps) - 0.5
+>>>>>>> 8789a7efef5b6178f6e4a1f05e69babdb1438fc4
 ```
 
 __3.__ 100 steel rods are going to be used to support a 1000 kg structure. The
@@ -625,6 +634,7 @@ plt.hist(dims,30)
 plt.xlabel('effect A.U.')
 plt.ylabel('number of parts')
 ```
+<<<<<<< HEAD
 
 ```{code-cell} ipython3
 factors = np.random.rand(10000,1000)-1/2
@@ -655,3 +665,5 @@ plt.hist(dims,30)
 plt.xlabel('effect A.U.')
 plt.ylabel('number of parts')
 ```
+=======
+>>>>>>> 8789a7efef5b6178f6e4a1f05e69babdb1438fc4

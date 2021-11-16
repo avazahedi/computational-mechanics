@@ -56,7 +56,8 @@ import numpy as np
 A=np.array([[-7,3,0],[7,-19,12],[0,4,-12]])
 b=np.array([-20,0,-8])
 
-x=np.linalg.solve(A,b)
+x = np.linalg.solve(A,b)
+
 for i in range(0,3):
     print('[{:5.1f} {:5.1f} {:5.1f}] {} [{:3.1f}] {} [{:5.1f}]'.format(*A[i],'*',x[i],'=',b[i]))
 ```
