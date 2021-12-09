@@ -369,6 +369,14 @@ plt.plot(x[2:-1],d3w_c,'-',label='central difference')
 plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
 ```
 
+Can't figure out why the central difference derivative isn't matching up with forward and backward. This is my graph with the derivatives from the chart earlier.
+
+```{code-cell} ipython3
+# dddw=np.zeros(len(x)-4)
+# for i in range(0,len(dddw)):
+#     dddw[i]=(w(x[i+2]) - 2*w(x[i+1]) + 2*w(x[i-1]) - w(x[i-2]))/2/h**3
+```
+
 2. Consider the temperature of a fin with conductive and convective heat transfer [analytical solution](https://en.wikipedia.org/wiki/Fin_(extended_surface)#Solutions) with x=0...60 mm connected to a $100^oC$ base surrounded by $20^oC$ air. 
 
 $T(x)=20+80\frac{\cosh(s(L-x))+\frac{h}{sk}\sinh(s(L-x))}{\cosh(sL)+\frac{h}{sk}\sinh(sL)}$
@@ -392,8 +400,6 @@ L=60E-3# length in m
 s=np.sqrt(2*h/k/R)
 x=np.arange(0,70,10)*1e-3 # m
 T= 20+80*(np.cosh(s*L-s*x)+h/s/k*np.sinh(s*L-s*x))/(np.cosh(s*L)+h/s/k*np.sinh(s*L))
-
-x = np.linspace(0,0.06,7) # m
 dx = 0.01 # m
 
 ## forward difference
@@ -408,6 +414,8 @@ plt.plot(x[:-1],dT_f,'o',label='fwd difference')
 plt.plot(x[1:],dT_b,'s',label='backward difference')
 plt.plot(x[1:-1],dT_c,'-',label='central difference')
 plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
+plt.xlabel('Distance (m)')
+plt.ylabel('Temp Derivatives')
 ```
 
 ```{code-cell} ipython3

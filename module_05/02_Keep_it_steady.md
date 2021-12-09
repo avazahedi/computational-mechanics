@@ -375,14 +375,6 @@ print('\ndeflection of beam (mm)\n-------------\n',w*1000)
 print('at position (m) \n-------------\n',xnum[1:-1])
 ```
 
-```{code-cell} ipython3
-x=np.linspace(0,L)
-w_an=-q*x*(L**3-2*x**2*L+x**3)/24/E/I
-
-plt.plot(xnum,np.block([0,w*1000,0]),'s')
-plt.plot(x,w_an*1000)
-```
-
 ### Discussion
 
 What is the convergence rate for this central difference method? _Hint: check the magnitude of round-off error for [central difference methods](./01_Revisiting_derivatives.ipynb)._
@@ -420,7 +412,126 @@ c. Set up and solve the finite difference equations for $\Delta x=1~mm$, plot th
 d. Plot the heat flux through the fin, $-\kappa \frac{dT}{dx}$.
 
 ```{code-cell} ipython3
+h=100 # W/m/m/K
+k=200 # W/m/K
+R=1E-3# radius in m
+L=60E-3# length in m
 
+hp = 2*h/k/R
+N=7
+# dx=L/N
+dx=0.01 # m
+
+print('h\' = {}, and step size dx= {}'.format(hp,dx))
+diag_factor=2+hp*dx**2 # diagonal multiplying factor
+print(diag_factor)
+Tinfty = 20
+T0 = 100
+Tsink = 25
+
+A = np.diag(np.ones(N)*diag_factor)-np.diag(np.ones(N-1),-1)-np.diag(np.ones(N-1),1)
+b = np.ones(N)*hp*Tinfty*dx**2
+A[-1,-2]=0
+A[-1,-1]=1
+b[0]+=T0
+# b[-1]+=h*dx/k*(Tinfty)
+b[-1]=Tsink
+print('finite difference A:\n------------------')
+print(A)
+print('\nfinite difference b:\n------------------')
+print(b)
+T=np.linalg.solve(A,b)
+print('\nfinite difference solution T(x):\n------------------')
+print(T)
+print('\nfinite difference solution at x (mm)=\n------------------')
+print(np.arange(1,7)*dx*1000)
+```
+
+```{code-cell} ipython3
+s=np.sqrt(hp)
+x=np.arange(0,N+1)*dx
+plt.plot(x[1:]*1000,T,'ro',label='finite difference')
+plt.plot(x[0],100,'rs',label='base temperature')
+plt.xlabel('distance along fin (mm)')
+plt.ylabel('Temperature (C)')
+plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
+plt.title('dx = 10mm')
+```
+
+```{code-cell} ipython3
+dx=0.005 # m
+
+print('h\' = {}, and step size dx= {}'.format(hp,dx))
+diag_factor=2+hp*dx**2 # diagonal multiplying factor
+print(diag_factor)
+
+A = np.diag(np.ones(N)*diag_factor)-np.diag(np.ones(N-1),-1)-np.diag(np.ones(N-1),1)
+b = np.ones(N)*hp*Tinfty*dx**2
+A[-1,-2]=0
+A[-1,-1]=1
+b[0]+=T0
+# b[-1]+=h*dx/k*(Tinfty)
+b[-1]=Tsink
+print('finite difference A:\n------------------')
+print(A)
+print('\nfinite difference b:\n------------------')
+print(b)
+T=np.linalg.solve(A,b)
+print('\nfinite difference solution T(x):\n------------------')
+print(T)
+print('\nfinite difference solution at x (mm)=\n------------------')
+print(np.arange(1,7)*dx*1000)
+s=np.sqrt(hp)
+x=np.arange(0,N+1)*dx
+plt.plot(x[1:]*1000,T,'ro',label='finite difference')
+plt.plot(x[0],100,'rs',label='base temperature')
+plt.xlabel('distance along fin (mm)')
+plt.ylabel('Temperature (C)')
+plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
+plt.title('dx = 5mm')
+```
+
+```{code-cell} ipython3
+dx=0.001 # m
+
+print('h\' = {}, and step size dx= {}'.format(hp,dx))
+diag_factor=2+hp*dx**2 # diagonal multiplying factor
+print(diag_factor)
+
+A = np.diag(np.ones(N)*diag_factor)-np.diag(np.ones(N-1),-1)-np.diag(np.ones(N-1),1)
+b = np.ones(N)*hp*Tinfty*dx**2
+A[-1,-2]=0
+A[-1,-1]=1
+b[0]+=T0
+# b[-1]+=h*dx/k*(Tinfty)
+b[-1]=Tsink
+print('finite difference A:\n------------------')
+print(A)
+print('\nfinite difference b:\n------------------')
+print(b)
+T=np.linalg.solve(A,b)
+print('\nfinite difference solution T(x):\n------------------')
+print(T)
+print('\nfinite difference solution at x (mm)=\n------------------')
+print(np.arange(1,7)*dx*1000)
+s=np.sqrt(hp)
+x=np.arange(0,N+1)*dx
+plt.plot(x[1:]*1000,T,'ro',label='finite difference')
+plt.plot(x[0],100,'rs',label='base temperature')
+plt.xlabel('distance along fin (mm)')
+plt.ylabel('Temperature (C)')
+plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
+plt.title('dx = 1mm')
+```
+
+```{code-cell} ipython3
+dTdx = 
+-k*dTdx
+plt.plot(x[0],100,'o',label='base temperature')
+plt.xlabel('distance along fin (mm)')
+plt.ylabel('Temperature (C)')
+plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
+plt.title('dx = 1mm')
 ```
 
 2. Consider the encastre beam shown in the __Static Beam deflections__ section. Use the following material and geometry (1-m steel rod 1-cm-by-1-cm) with 100 N/m load applied
