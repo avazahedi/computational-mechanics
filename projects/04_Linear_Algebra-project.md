@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.10.3
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -59,7 +59,7 @@ plt.style.use('fivethirtyeight')
 ```{code-cell} ipython3
 fea_arrays = np.load('./fea_arrays.npz')
 K=fea_arrays['K']
-K
+K;
 ```
 
 In this project we are solving the problem, $\mathbf{F}=\mathbf{Ku}$, where $\mathbf{F}$ is measured in Newtons, $\mathbf{K}$ `=E*A*K` is the stiffness in N/mm, `E` is Young's modulus measured in MPa (N/mm^2), and `A` is the cross-sectional area of the beam measured in mm^2. 
@@ -106,7 +106,7 @@ _your array `F` is zeros, except for `F[5]=-300`, to create a -300 N load at nod
 
 c. Plug in the values for $\mathbf{u}$ into the full equation, $\mathbf{Ku}=\mathbf{F}$, to solve for the reaction forces
 
-d. Create a plot of the undeformed and deformed structure with the displacements and forces plotted as vectors (via `quiver`). Your result for aluminum should match the following result from [extra-FEA_material](./extra-FEA_material.ipynb). _note: The scale factor is applied to displacements $\mathbf{u}$, not forces._
+d. Create a plot of the undeformed and deformed structure with the displacements and forces plotted as vectors (via `quiver`). Your result for steel should match the following result from [extra-FEA_material](./extra-FEA_material.ipynb). _note: The scale factor is applied to displacements $\mathbf{u}$, not forces._
 
 > __Note__: Look at the [extra FEA material](./extra-FEA_material). It
 > has example code that you can plug in here to make these plots.
@@ -117,7 +117,128 @@ d. Create a plot of the undeformed and deformed structure with the displacements
 ![Deformed structure with loads applied](../images/deformed_truss.png)
 
 ```{code-cell} ipython3
- 
+def LUNaive(A):
+    '''LUNaive: naive LU decomposition
+    L,U = LUNaive(A): LU decomposition without pivoting.
+    solution method requires floating point numbers, 
+    as such the dtype is changed to float
+    
+    Arguments:
+    ----------
+    A = coefficient matrix
+    returns:
+    ---------
+    L = Lower triangular matrix
+    U = Upper triangular matrix
+    '''
+    [m,n] = np.shape(A)
+    if m!=n: error('Matrix A must be square')
+    nb = n+1
+    # Gauss Elimination
+    U = A.astype(float)
+    L = np.eye(n)
+
+    for k in range(0,n-1):
+        for i in range(k+1,n):
+            if U[k,k] != 0.0:
+                factor = U[i,k]/U[k,k]
+                L[i,k]=factor
+                U[i,:] = U[i,:] - factor*U[k,:]
+    return L,U
+```
+
+```{code-cell} ipython3
+def solveLU(L,U,b):
+    '''solveLU: solve for x when LUx = b
+    x = solveLU(L,U,b): solves for x given the lower and upper 
+    triangular matrix storage
+    uses forward substitution for 
+    1. Ly = b
+    then backward substitution for
+    2. Ux = y
+    
+    Arguments:
+    ----------
+    L = Lower triangular matrix
+    U = Upper triangular matrix
+    b = output vector
+    
+    returns:
+    ---------
+    x = solution of LUx=b '''
+    n=len(b)
+    x=np.zeros(n)
+    y=np.zeros(n)
+        
+    # forward substitution
+    for k in range(0,n):
+        y[k] = b[k] - L[k,0:k]@y[0:k]
+    # backward substitution
+    for k in range(n-1,-1,-1):
+        x[k] = (y[k] - U[k,k+1:n]@x[k+1:n])/U[k,k]
+    return x
+```
+
+```{code-cell} ipython3
+L, U = LUNaive(K[2:13,2:13])
+# print('L\n', L, '\n\n', 'U\n', U, '\n')
+A = 0.1 # mm^2
+E_st = 200e3 # MPa - steel
+E_al = 70e3 # MPa - aluminum
+F = np.zeros(11)
+F[5] = -300 # 300N load at node 4
+F_EA_st = F/(E_st*A)
+F_EA_al = F/(E_al*A)
+
+ufree_st = solveLU(L,U,F_EA_st)
+ufree_al = solveLU(L,U,F_EA_al)
+
+u_st = np.zeros(14)
+u_st[2:13] = ufree_st
+u_al = np.zeros(14)
+u_al[2:13] = ufree_al
+
+print('Steel displacements (mm):\n', u_st, '\n')
+print('Aluminum displacements (mm):\n', u_al, '\n')
+
+
+F_r_st = E_st*A*K@u_st # steel reaction forces
+F_r_al = E_al*A*K@u_al # aluminum reaction forces
+
+print('Reaction forces (N) steel:\n', F_r_st, '\n\nReaction forces (N) aluminum:\n', F_r_al)
+```
+
+```{code-cell} ipython3
+scale = 5
+# r is initial geometry
+# each beam is 300 mm
+r0=np.array([0,0,150,150*2**0.5,300,0,450,150*2**0.5,600,0,750,150*2**0.5,900,0]) # all in mm
+r_st=r0+u_st*scale
+r_al=r0+u_al*scale
+
+ix = 2*np.block([[np.arange(0,5)],[np.arange(1,6)],[np.arange(2,7)],[np.arange(0,5)]])
+iy = ix+1
+
+plt.figure()
+plt.plot(r0[ix],r0[iy],'s-',color='k')
+plt.quiver(r0[ix],r0[iy],u_st[ix],u_st[iy],color=(0,1,1,1),label='displacements')
+plt.plot(r_st[ix],r_st[iy],'o-',color='g')
+
+plt.quiver(r0[ix],r0[iy],F_r_st[ix],F_r_st[iy],color=(1,0,0,1),label='applied forces')
+plt.axis([-100,1100,-200,400])
+plt.legend(loc='center left', bbox_to_anchor=(1,0.5));
+plt.title('original (blk) and deformed (gr) steel structure\nscale = {}x'.format(scale));
+```
+
+```{code-cell} ipython3
+plt.figure()
+plt.plot(r0[ix],r0[iy],'s-',color='k')
+plt.quiver(r0[ix],r0[iy],u_al[ix],u_al[iy],color=(0,1,1,1),label='displacements')
+plt.plot(r_al[ix],r_al[iy],'o-',color='g')
+plt.quiver(r0[ix],r0[iy],F_r_al[ix],F_r_al[iy],color=(1,0,0,1),label='applied forces')
+plt.axis([-200,1200,-400,400])
+plt.legend(loc='center left', bbox_to_anchor=(1,0.5));
+plt.title('original (blk) and deformed (gr) aluminum structure\nscale = {}x'.format(scale));
 ```
 
 ### 3. Determine cross-sectional area
@@ -130,8 +251,45 @@ c. What are the weights of the aluminum and steel trusses with the
 chosen cross-sectional areas?
 
 ```{code-cell} ipython3
+L, U = LUNaive(K[2:13,2:13])
+# A_al = 9.28 # mm^2
+# A_st = 3.25 # mm^2
+# # if not abs value
 
+A_al = 23.04 # mm^2
+A_st = 8.07 # mm^2
+
+E_st = 200e3 # MPa - steel
+E_al = 70e3 # MPa - aluminum
+F = np.zeros(11)
+F[5] = -300 # 300N load at node 4
+F_EA_st = F/(E_st*A_st)
+F_EA_al = F/(E_al*A_al)
+
+ufree_st = solveLU(L,U,F_EA_st)
+ufree_al = solveLU(L,U,F_EA_al)
+print('Al\n', ufree_al, '\n\nSt\n', ufree_st)
+
+print(all(np.abs(i)<0.2 for i in ufree_al))
+print(all(np.abs(i)<0.2 for i in ufree_st))
 ```
+
+From a guess-and-check method, to keep the magnitude of the y-deflections less than 0.2 mm, the min cross-sectional area is 23.04 mm^2 for aluminum and 8.07 mm^2 for steel.
+
+```{code-cell} ipython3
+p_al = 0.0027 # g/mm^3
+p_st = 0.00785 # g/mm^3
+vol_al = 11*300*A_al
+vol_st = 11*300*A_st
+weight_al = p_al*vol_al
+weight_st = p_st*vol_st
+
+print('Aluminum truss weight: {:.2f}g \nSteel truss weight: {:0.2f}g'.format(weight_al, weight_st))
+```
+
+Using a density of 2.7 g/cm^3 for aluminum and a density of 7.85 g/cm^3 for steel.
+
++++
 
 ## References
 

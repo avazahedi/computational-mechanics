@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.10.3
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -80,7 +80,7 @@ If you divide the fin into 6 equally spaced sections, you have 6 equations with 
 
 6. $T_5-2T_6+T_7+\Delta x^2 h'(T_{\infty}-T_6) = 0 \leftarrow T_7 = \frac{-h\Delta x}{k}(T_{6}-T_{\infty})+T_5$
 
-where $h'=\frac{2h}{\kappa R}$ is the modified convective heat transfer for the fin. And your boundary conditions give us values for $T_{0}~and~T_{7}.$ You can plug in constants for forced air convection, $h=100~W/m^2K$, aluminum fin, $\kappa=200~W/mK$, and 60-mm-long and 1-mm-radius fin, the air is room temperature, $T_{\infty}=20^oC$, and the base is $T_{base}=T_{0}=100^oC$. 
+where $h'=\frac{2h}{\kappa R}$ is the modified convective heat transfer for the fin. And your boundary conditions give us values for $T_{0}~and~T_{7}.$ You can plug in constants for forced air convection, $h=100~W/m^2K$, aluminum fin, $\kappa=200~W/mK$, and 60-mm-long and 1-mm-radius fin, the air is room temperature, $T_{\infty}=20^oC$, and the base is $T_{base}=T_{0}=100^oC$.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -181,7 +181,44 @@ a. Make a plot of the Temperature along the fin.
 b. Plot the heat flux through the fin $-\kappa \frac{dT}{dx}$
 
 ```{code-cell} ipython3
+hp = 2*h/k/R
+N=6
+dx=L/N/2
 
+print('h\' = {}, and step size dx= {}'.format(hp,dx))
+diag_factor=2+hp*dx**2 # diagonal multiplying factor
+print(diag_factor)
+Tinfty=20
+T0 = 100
+
+A = np.diag(np.ones(N)*diag_factor)-np.diag(np.ones(N-1),-1)-np.diag(np.ones(N-1),1)
+A[-1,-2]+= -1
+A[-1,-1]+= h/k*dx
+b = np.ones(N)*hp*Tinfty*dx**2
+b[0]+=T0
+b[-1]+=h*dx/k*(Tinfty)
+print('finite difference A:\n------------------')
+print(A)
+print('\nfinite difference b:\n------------------')
+print(b)
+T=np.linalg.solve(A,b)
+print('\nfinite difference solution T(x):\n------------------')
+print(T)
+print('\nfinite difference solution at x (mm)=\n------------------')
+print(np.arange(1,7)*dx*1000)
+```
+
+```{code-cell} ipython3
+L=60e-3
+s=np.sqrt(hp)
+F=lambda x: 20+80*(np.cosh(s*L-s*x)+h/s/k*np.sinh(s*L-s*x))/(np.cosh(s*L)+h/s/k*np.sinh(s*L))
+x=np.arange(0,N+1)*dx
+plt.plot(x*1000,F(x),label='analytical')#a*np.cosh(s*x)+b*np.sinh(s*x))
+plt.plot(x[1:]*1000,T,'ro',label='finite difference')
+plt.plot(x[0],100,'rs',label='base temperature')
+plt.xlabel('distance along fin (mm)')
+plt.ylabel('Temperature (C)')
+plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
 ```
 
 ## Static beam deflections
@@ -309,10 +346,41 @@ plt.plot(x,w_an*1000)
 
 ### Exercise 
 
-Divide the simply-supported beam into 12 sections and plot the deflection as a function of distance along the beam with a uniform load. 
+Divide the simply-supported beam into 12 sections and plot the deflection as a function of distance along the beam with a uniform load.
 
 ```{code-cell} ipython3
+L=1
+h=L/12
+E=200e9
+I=0.01**4/12
+q=100
 
+A=np.diag(np.ones(5)*6)\
++np.diag(np.ones(4)*-4,-1)\
++np.diag(np.ones(4)*-4,1)\
++np.diag(np.ones(3),-2)\
++np.diag(np.ones(3),2)
+A[0,0]+=-1
+A[-1,-1]+=-1
+
+b=-np.ones(5)*q/E/I*h**4
+
+w=np.linalg.solve(A,b)
+xnum=np.arange(0,L+h/2,h)
+print('finite difference A:\n------------------')
+print(A)
+print('\nfinite difference b:\n------------------')
+print(b)
+print('\ndeflection of beam (mm)\n-------------\n',w*1000)
+print('at position (m) \n-------------\n',xnum[1:-1])
+```
+
+```{code-cell} ipython3
+x=np.linspace(0,L)
+w_an=-q*x*(L**3-2*x**2*L+x**3)/24/E/I
+
+plt.plot(xnum,np.block([0,w*1000,0]),'s')
+plt.plot(x,w_an*1000)
 ```
 
 ### Discussion
@@ -349,7 +417,7 @@ b. Set up and solve the finite difference equations for $\Delta x=5~mm$, plot th
 
 c. Set up and solve the finite difference equations for $\Delta x=1~mm$, plot the resulting temperature $T(x)$. 
 
-d. Plot the heat flux through the fin, $-\kappa \frac{dT}{dx}$. 
+d. Plot the heat flux through the fin, $-\kappa \frac{dT}{dx}$.
 
 ```{code-cell} ipython3
 

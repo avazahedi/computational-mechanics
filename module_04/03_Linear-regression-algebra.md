@@ -5,9 +5,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.10.3
+    jupytext_version: 1.11.4
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -144,7 +144,8 @@ LinAlgError                               Traceback (most recent call last)
     204 
     205 def _assert_finite(*arrays):
 
-LinAlgError: Last 2 dimensions of the array must be square```
+LinAlgError: Last 2 dimensions of the array must be square
+```
 
 ### Reframe the least-square problem
 
@@ -170,8 +171,7 @@ Our final least squares linear regression is as follows
 
 $\mathbf{Z^Ty}=[\mathbf{Z^T Z}]\mathbf{a}$
 
-which is a $[3\times 1]=[3 \times 3][3 \times 1]$, set of equations. 
-```
+which is a $[3\times 1]=[3 \times 3][3 \times 1]$, set of equations.
 
 ```{code-cell} ipython3
 a = np.linalg.solve(Z.T@Z,Z.T@y)
@@ -191,9 +191,7 @@ plt.legend();
 
 The quadratic curve plotted should be smooth, but you Python is connected each (x,y)-location provided with straight lines. Plot the quadratic fit with 50 x-data points to make it smooth.
 
-```{code-cell} ipython3
-
-```
++++
 
 ## General Coefficient of Determination
 
@@ -226,9 +224,36 @@ What is the highest possible coefficient of determination? If its maximized, is 
 
 Compare the coefficient of determination for a straight line _(you have to do a fit)_ to the quadratic fit _(done above)_. Which one is a better fit?
 
-```{code-cell} ipython3
++++
 
+The highest possible coefficient of determination is 1. If it is maximized, that is not necessarily a good thing because that is saying that the standard deviation is not largely due to random error, and therefore there are other components contributing to standard deviation.
+
+```{code-cell} ipython3
+m, b = np.polyfit(x,y, 1)
+y_fit = np.poly1d((m,b))
+
+y1 = np.empty_like(y)
+for i in range(len(y1)):
+    y1[i] = y_fit(x[i])
+
+St=np.std(y)
+Sr=np.std(y-y1)
+r2=1-Sr/St;
+r=np.sqrt(r2);
+
+print('the coefficient of determination for this fit is {}'.format(r2))
+print('the correlation coefficient this fit is {}'.format(r))
+
+plt.plot(x,y,'o',label='data')
+plt.plot(x,m*x+b,'b-')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend();
 ```
+
+Quadratic is a much better fit.
+
++++
 
 ## Overfitting Warning 
 **Coefficient of determination reduction does not always mean a better fit**
@@ -289,12 +314,12 @@ Since, you have lots of data you can use as large of a polynomial fit as you wan
 # randomize testing/training indices
 np.random.seed(103)
 i_rand=np.random.randint(0,len(d),size=len(d))
-# choose the first half of data as training
+# choose the first 70% of data as training (0.7)
 train_per=0.7
 d_train=d[i_rand[:int(len(d)*train_per)]]
 F_train=F[i_rand[:int(len(d)*train_per)]]
 
-# choose the second half of data as testing
+# choose the last 30% of data as testing
 d_test=d[i_rand[int(len(d)*train_per):]]
 F_test=F[i_rand[int(len(d)*train_per):]]
 ```
@@ -388,6 +413,55 @@ Use the `../data/xy_data.csv` data set to create polynomial fits from order 1-7.
 xy_data = np.loadtxt('../data/xy_data.csv',delimiter=',')
 x=xy_data[:,0];
 y=xy_data[:,1];
+
+# randomize testing/training indices
+np.random.seed(103)
+i_rand=np.random.randint(0,len(x),size=len(x))
+# choose the first 70% of data as training
+train_per=0.7
+x_train=x[i_rand[:int(len(x)*train_per)]]
+y_train=y[i_rand[:int(len(x)*train_per)]]
+
+# choose the last 30% of data as testing
+x_test=x[i_rand[int(len(x)*train_per):]]
+y_test=y[i_rand[int(len(x)*train_per):]]
+
+
+
+Z=np.block([[x_train**0]]).T
+Z_test=np.block([[x_test**0]]).T
+#np.append(Z,np.array([d**2]),axis=0)
+max_N=8
+SSE_train=np.zeros(max_N)
+SSE_test=np.zeros(max_N)
+for i in range(1,max_N):
+    Z=np.hstack((Z,x_train.reshape(-1,1)**i))
+    Z_test=np.hstack((Z_test,x_test.reshape(-1,1)**i))
+    A = np.linalg.solve(Z.T@Z,Z.T@y_train)
+    St=np.std(y_train)
+    Sr=np.std(y_train-Z@A)
+    r2=1-Sr/St
+    print('---- n={:d} -------'.format(i))
+    print('the coefficient of determination for this fit is {:.3f}'.format(r2))
+    print('the correlation coefficient this fit is {:.3f}'.format(r2**0.5))
+    plt.plot(x_train,y_train-Z@A,'o',label='order {:d}'.format(i))
+    SSE_train[i]=np.sum((y_train-Z@A)**2)/len(y_train)
+    SSE_test[i]=np.sum((y_test-Z_test@A)**2)/len(y_test)
+    
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5));
+plt.title('Error in predicted vs measured values')
+plt.xlabel('deflection (nm)')
+plt.ylabel('force error\ny-Z@A(nN)');
+
+
+
+f, ax1=plt.subplots(1,1,figsize=(6,4),tight_layout=True)
+ax1.semilogy(np.arange(2,max_N),SSE_train[2:],label='training error')
+ax1.semilogy(np.arange(2,max_N),SSE_test[2:],label='testing error')
+f.suptitle('Reduction in error with higher order fits')
+ax1.legend();
+ax1.set_xlabel('polynomial order')
+ax1.set_ylabel('total sum of square error');
 ```
 
 ### Beyond polynomials
@@ -497,7 +571,57 @@ e. Repeat b-d for orders 2,3,4,...,10
 f. Plot the error in __testing-training__ error vs the order of the polynomial fit
 
 ```{code-cell} ipython3
+xy_data = np.loadtxt('../data/xy_data.csv',delimiter=',')
+x=xy_data[:,0];
+y=xy_data[:,1];
 
+# randomize testing/training indices
+np.random.seed(103)
+i_rand=np.random.randint(0,len(x),size=len(x))
+# choose the first 70% of data as training
+train_per=0.7
+x_train=x[i_rand[:int(len(x)*train_per)]]
+y_train=y[i_rand[:int(len(x)*train_per)]]
+
+# choose the last 30% of data as testing
+x_test=x[i_rand[int(len(x)*train_per):]]
+y_test=y[i_rand[int(len(x)*train_per):]]
+
+
+Z=np.block([[x_train**0]]).T
+Z_test=np.block([[x_test**0]]).T
+#np.append(Z,np.array([d**2]),axis=0)
+max_N=11
+SSE_train=np.zeros(max_N)
+SSE_test=np.zeros(max_N)
+for i in range(1,max_N):
+    Z=np.hstack((Z,x_train.reshape(-1,1)**i))
+    Z_test=np.hstack((Z_test,x_test.reshape(-1,1)**i))
+    A = np.linalg.solve(Z.T@Z,Z.T@y_train)
+    St=np.std(y_train)
+    Sr=np.std(y_train-Z@A)
+    r2=1-Sr/St
+    print('---- n={:d} -------'.format(i))
+    print('the coefficient of determination for this fit is {:.3f}'.format(r2))
+    print('the correlation coefficient this fit is {:.3f}'.format(r2**0.5))
+    plt.plot(x_train,y_train-Z@A,'o',label='order {:d}'.format(i))
+    SSE_train[i]=np.sum((y_train-Z@A)**2)/len(y_train)
+    SSE_test[i]=np.sum((y_test-Z_test@A)**2)/len(y_test)
+    
+plt.legend(loc='center left', bbox_to_anchor=(1, 0.5));
+plt.title('Error in predicted vs measured values')
+plt.xlabel('deflection (nm)')
+plt.ylabel('force error\ny-Z@A(nN)');
+```
+
+```{code-cell} ipython3
+f, ax1=plt.subplots(1,1,figsize=(6,4),tight_layout=True)
+ax1.semilogy(np.arange(2,max_N),SSE_train[2:],label='training error')
+ax1.semilogy(np.arange(2,max_N),SSE_test[2:],label='testing error')
+f.suptitle('Reduction in error with higher order fits')
+ax1.legend();
+ax1.set_xlabel('polynomial order')
+ax1.set_ylabel('total sum of square error');
 ```
 
 <img src="../images/prony-series.png" style="width: 300px;"/> <img src="../images/stress_relax_wheat.png" style="width: 400px;"/> 
@@ -522,6 +646,26 @@ d. Plot the best-fit function and the data from `../data/stress_relax.dat` _Use 
 
 ```
 
+```{code-cell} ipython3
+stress_relax = np.loadtxt('../data/stress_relax.dat',delimiter=',',skiprows=1)
+t=stress_relax[:,0];    # time (s)
+s=stress_relax[:,1];    # stress (MPa)
+
+Z=np.block([[np.exp(-t/1.78)],[np.exp(-t/11)],[np.exp(-t/53)], [np.exp(-t/411)], [t**0]]).T
+A = np.linalg.solve(Z.T@Z,Z.T@s)
+print('Constants a1...a5: {}'.format(A))
+St=np.std(s)
+Sr=np.std(s-Z@A)
+r2=1-Sr/St
+print('the coefficient of determination for this fit is {:.3f}'.format(r2))
+print('the correlation coefficient this fit is {:.3f}'.format(r2**0.5))
+plt.plot(t,s,'o',label='data')
+plt.plot(t,Z@A,'-',label='fit')
+plt.title('Stress vs. Time')
+plt.xlabel('Time(s)')
+plt.ylabel('Stress (MPa)')
+```
+
 3. Load the '../data/primary-energy-consumption-by-region.csv' that has the energy consumption of different regions of the world from 1965 until 2018 [Our world in Data](https://ourworldindata.org/energy). 
 You are going to compare the energy consumption of the United States to all of Europe. Load the data into a pandas dataframe. *Note: you can get certain rows of the data frame by specifying what you're looking for e.g. 
 `EUR = dataframe[dataframe['Entity']=='Europe']` will give us all the rows from Europe's energy consumption.*
@@ -531,6 +675,44 @@ a. Use a piecewise least-squares regression to find a function for the energy co
 energy consumed = $f(t) = At+B+C(t-1970)H(t-1970)$
 
 c. What is your prediction for US energy use in 2025? How about European energy use in 2025?
+
+```{code-cell} ipython3
+fname = '../data/primary-energy-consumption-by-region.csv'
+df = pd.read_csv(fname)
+
+EUR = df[df['Entity']=='Europe']
+US = df[df['Entity']=='United States']
+
+t = t_eu = EUR['Year'].values
+t_us = US['Year'].values
+energy_eu = EUR['Primary Energy Consumption (terawatt-hours)'].values
+energy_us = US['Primary Energy Consumption (terawatt-hours)'].values
+
+Z = np.block([[t],[t**0],[(t-1970)*(t>=1970)]]).T
+
+fit_eu = np.linalg.solve(Z.T@Z,Z.T@energy_eu)
+fit_us = np.linalg.solve(Z.T@Z,Z.T@energy_us)
+
+plt.plot(t_eu,energy_eu,'o-',label='EU Energy Use')
+plt.plot(t_us,energy_us,'o-',label='US Energy Use')
+plt.plot(t_eu,Z@fit_eu,label='EU piece-wise best-fit')
+plt.plot(t_us,Z@fit_us,label='US piece-wise best-fit')
+plt.title('Piecewise Fit to Energy Consumption')
+plt.xlabel('Year')
+plt.ylabel('Energy Consumption (TW-h)')
+plt.legend();
+```
+
+```{code-cell} ipython3
+
+```
+
+```{code-cell} ipython3
+eu_2025 = fit_eu[0]*2025 + fit_eu[1] + fit_eu[2]*(2025-1970)
+print('Predicted EU energy use in 2025: {:.0f} TW-h'.format(eu_2025))
+us_2025 = fit_us[0]*2025 + fit_us[1] + fit_us[2]*(2025-1970)
+print('Predicted US energy use in 2025: {:.0f} TW-h'.format(us_2025))
+```
 
 ```{code-cell} ipython3
 
