@@ -213,7 +213,7 @@ L=60e-3
 s=np.sqrt(hp)
 F=lambda x: 20+80*(np.cosh(s*L-s*x)+h/s/k*np.sinh(s*L-s*x))/(np.cosh(s*L)+h/s/k*np.sinh(s*L))
 x=np.arange(0,N+1)*dx
-plt.plot(x*1000,F(x),label='analytical')#a*np.cosh(s*x)+b*np.sinh(s*x))
+# plt.plot(x*1000,F(x),label='analytical')#a*np.cosh(s*x)+b*np.sinh(s*x))
 plt.plot(x[1:]*1000,T,'ro',label='finite difference')
 plt.plot(x[0],100,'rs',label='base temperature')
 plt.xlabel('distance along fin (mm)')
@@ -526,12 +526,12 @@ plt.title('dx = 1mm')
 
 ```{code-cell} ipython3
 dTdx = 
--k*dTdx
-plt.plot(x[0],100,'o',label='base temperature')
+flux = -k*dTdx
+plt.plot(x[1:]*1000,flux,'ro',label='heat flux')
 plt.xlabel('distance along fin (mm)')
 plt.ylabel('Temperature (C)')
 plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
-plt.title('dx = 1mm')
+plt.title('heat flux')
 ```
 
 2. Consider the encastre beam shown in the __Static Beam deflections__ section. Use the following material and geometry (1-m steel rod 1-cm-by-1-cm) with 100 N/m load applied
@@ -552,6 +552,41 @@ a. Solve for the four integration constants using the boundary conditions shown 
 b. Create a finite difference approximation with 10, 20, 30, and 40 segments. 
 
 c. Plot the error between the maximum predicted numerical deflection (b) and the analytical deflection (a). What is the convergence rate of the finite difference approximation?
+
+```{code-cell} ipython3
+L=1
+E=200e9
+I=0.01**4/12
+q=100
+h=10
+
+A=np.diag(np.ones(5)*6)\
++np.diag(np.ones(4)*-4,-1)\
++np.diag(np.ones(4)*-4,1)\
++np.diag(np.ones(3),-2)\
++np.diag(np.ones(3),2)
+A[0,0]+=-1
+A[-1,-1]+=-1
+
+b=-np.ones(5)*q/E/I*h**4
+
+w=np.linalg.solve(A,b)
+xnum=np.arange(0,L+h/2,h)
+print('finite difference A:\n------------------')
+print(A)
+print('\nfinite difference b:\n------------------')
+print(b)
+print('\ndeflection of beam (mm)\n-------------\n',w*1000)
+print('at position (m) \n-------------\n',xnum[1:-1])
+```
+
+```{code-cell} ipython3
+x=np.linspace(0,L)
+w_an=q0*x**4/24 + A*x**3/6 + B*x**2/2 + C*x + D
+
+plt.plot(xnum,np.block([0,w*1000,0]),'s')
+plt.plot(x,w_an*1000)
+```
 
 ```{code-cell} ipython3
 
