@@ -153,8 +153,27 @@ print('2nd natural frequency is %1.2f Hz, \
 Increase the stiffness of the springs, $k_1,~k_2,~and~k_3=2000~N/m.$ What are the natural frequencies? The stiffness increased $\times 4,$ how much did the natural frequencies change?
 
 ```{code-cell} ipython3
+m1=m2=0.1 # 0.1 kg
+k1=k2=k3=2000 # 2000 N/m
 
+M=np.array([[m1,0],[0,m2]])
+K=np.array([[k1+k2,-k2],[-k2,k2+k3]])
+e,v=linalg.eig(K,M)
+
+w1=np.sqrt(e[0].real)/2/np.pi
+v1=v[:,0]/max(v[:,0])
+
+w2=np.sqrt(e[1].real)/2/np.pi
+v2=v[:,1]/max(v[:,1])
+print('1st natural frequency is %1.2f Hz, \
+     mode shape: %1.0f*x1(t)=%1.0f*x2(t)'%(w1,v1[0],v1[1]))
+print('2nd natural frequency is %1.2f Hz, \
+    mode shape: %1.0f*x1(t)=%1.0f*x2(t)'%(w2,v2[0],v2[1]))
 ```
+
+When the stiffness increased x4, the natural frequencies increased x2.
+
++++
 
 ### Linear Algebra: $\mathbf{Ax=b}$ vs $\mathbf{Ax}=\lambda\mathbf{x}$
 
@@ -350,8 +369,37 @@ e.g. `z[:,0]=np.array([0,0,2,2])` for eigenvector 1.
 How does it change the plots for "Eigenvector 1" and "Eigenvector 2"?
 
 ```{code-cell} ipython3
+T=2*1/w1 # 2 x longest period
+dt=1/w2/10 # shortest period
+t=np.arange(0,T,dt)
+state_e1=np.zeros((4,len(t)))
+state_e1[:,0]=np.array([0.02,0.02,2,2]) # set initial conditions eigenv 1
+state_e2=np.zeros((4,len(t)))
+state_e2[:,0]=np.array([0.02,-0.02,2,2]) # set initial conditions eigenv 2
 
+for i in range(0,len(t)-1):
+    state_e1[:,i+1]=heun_step(state_e1[:,i],spring_mass,dt)
+    state_e2[:,i+1]=heun_step(state_e2[:,i],spring_mass,dt)
+    
+plt.figure(figsize=(9,5))
+plt.subplot(2,1,1)
+plt.title('Eigenvector 1')
+plt.plot(t,state_e1[0,:]*100,'rs-',label='x_1')
+plt.plot(t,state_e1[1,:]*100,'b-',label='x_2')
+plt.ylabel('position\n (cm)')
+plt.subplot(2,1,2)
+plt.title('Eigenvector 2')
+plt.plot(t,state_e2[0,:]*100,'rs-',label='x_1')
+plt.plot(t,state_e2[1,:]*100,'b-',label='x_2')
+plt.xlabel('time (s)')
+plt.ylabel('position\n (cm)')
+plt.tight_layout()
+plt.legend(loc='center left',bbox_to_anchor=(1,1.2));
 ```
+
+Eigenvector 1 shifted and eigenvector 2 became asymmetrical around the center (position=0).
+
++++
 
 ## Back to your Guitar String
 
@@ -463,6 +511,10 @@ print(e.real**0.5/2/np.pi)
 f1=np.sqrt(e.real[0])/2/np.pi
 fn=np.sqrt(e.real[-1])/2/np.pi
 print('\nLongest time period ={:1.3f} ms\nshortest time period ={:1.3f} ms'.format(1/f1*1000,1/fn*1000))
+```
+
+```{code-cell} ipython3
+print(e.imag)
 ```
 
 ### Exercise
@@ -824,7 +876,7 @@ Audio(data=100*np.sin(110*2*np.pi*tsig),rate=r)
 Create a 1-second audio clip of the 440-Hz A note.
 
 ```{code-cell} ipython3
-
+Audio(data=100*np.sin(440*2*np.pi*tsig),rate=r)
 ```
 
 ### Listen to your simulated Guitar
@@ -879,7 +931,44 @@ a. Calculate the natural frequencies and mode shapes _(eigenvectors)_.
 b. Plot the position of $x_1~and~x_2$ if the masses are at rest when mass 2 is given an initial velocity of 2 m/s.
 
 ```{code-cell} ipython3
+m1=m2=0.1 # 0.1 kg
+k1=k3=1000 # 1000 N/m
+k2=500 # 500 N/m
 
+M=np.array([[m1,0],[0,m2]])
+K=np.array([[k1+k2,-k2],[-k2,k2+k3]])
+
+e,v=linalg.eig(K,M)
+
+print('eigenvalue 1:,\t eigenvector 1:\n',e[0],'\t',v[:,0]/v[0,0])
+print('----------------------')
+print('eigenvalue 2:,\t eigenvector 2:\n',e[1],'\t',v[:,1]/v[1,0])
+
+w1=np.sqrt(e[0].real)/2/np.pi
+v1=v[:,0]/max(v[:,0])
+
+w2=np.sqrt(e[1].real)/2/np.pi
+v2=v[:,1]/max(v[:,1])
+print('1st natural frequency is %1.2f Hz, \
+     mode shape: %1.0f*x1(t)=%1.0f*x2(t)'%(w1,v1[0],v1[1]))
+print('2nd natural frequency is %1.2f Hz, \
+    mode shape: %1.0f*x1(t)=%1.0f*x2(t)'%(w2,v2[0],v2[1]))
+```
+
+```{code-cell} ipython3
+T=2*1/w1 # 2 x longest period
+dt=1/w2/10 # shortest period
+t=np.arange(0,T,dt)
+state=np.zeros((4,len(t)))
+state[:,0]=np.array([0,0,0,2]) # set initial conditions
+for i in range(0,len(t)-1):
+    state[:,i+1]=heun_step(state[:,i],spring_mass,dt)
+    
+plt.plot(t,state[0,:]*100,label='x_1')
+plt.plot(t,state[1,:]*100,label='x_2')
+plt.xlabel('time (s)')
+plt.ylabel('position (cm)')
+plt.legend();
 ```
 
 2. Consider the G-string on the guitar, L=0.64 m, $\mu=1.14~g/m,$ and T=71.81 N [1]. 
@@ -889,16 +978,73 @@ __Guitar string equation:__ $\mu\frac{\partial^2 y}{\partial t^2}=T\frac{\partia
 a. Calculate the first and second natural frequencies using 6, 30, 45, and 60 nodes. Plot the mode shapes to demonstrate convergence.
 
 ```{code-cell} ipython3
+L=0.64 # 64-cm guitar string
+T=71.81 # N
+mu=1.14e-3 # kg/m
 
+nodes = [6, 30, 45, 60]
+for N in nodes:
+    dx=L/(N+1)
+
+    k = T/dx**2/mu
+
+    A = k*(np.diag(np.ones(N)*2)\
+           -np.diag(np.ones(N-1),-1)\
+           -np.diag(np.ones(N-1),1))
+    # print('K=T/mu/h^2*')
+    # print(A/k)
+
+    e,v=linalg.eig(A)
+    isort = np.argsort(e.real)
+    e=e[isort]
+    v=v[:,isort]
+
+    print('First 2 Natural frequencies of {}-element string (Hz)'.format(N))
+    print(e.real[:2]**0.5/2/np.pi)
+    
+f1=np.sqrt(e.real[0])/2/np.pi
+fn=np.sqrt(e.real[-1])/2/np.pi
 ```
 
 b. Use 60 nodes to create an animation using the following initial condition, $y(x,0)=0$ and $\dot{y}(L/2,0)=2~m/s.$ e.g. `dy[30,0]=2`.
 
 ```{code-cell} ipython3
+N=60
+T1 = 10/f1 
+dt=1/fn/10
+t=np.arange(0,T1,dt)
+tsteps=len(t)
+x=np.linspace(0,L,N+2)
+y=np.zeros((N,tsteps))
+y[:,0]=0.1*x[1:-1]-0.2*(x[1:-1]-L/2)*(x[1:-1]>L/2)
+dy=np.zeros((N,tsteps))
+dy[30,0]=2
+for i in range(0,tsteps-1):
+    state = np.block([y[:,i],dy[:,i]]) # set z=[y,dy]
+    next_state = heun_step(state,wave_equation,dt) # get next state
+    y[:,i+1]=next_state[0:N] # save the postions
+    dy[:,i+1]=next_state[N:] # save the velocities
+ybcs = np.pad(y,((1,1),(0,0)))
+```
 
+```{code-cell} ipython3
+anim = animation.FuncAnimation(fig, animate, init_func=init,
+                               frames=range(0,tsteps,10), interval=10, 
+                               blit=True)
+print('Animation of String from t=0-{:.1f} ms every {:.2f} ms'.format(t[-1]*1000,t[10]*1000))
+```
+
+```{code-cell} ipython3
+HTML(anim.to_html5_video())
 ```
 
 c. Use 60 nodes to create an audio display using the following initial condition, $y(x,0)=0$ and $\dot{y}(L/2,0)=2~m/s.$ e.g. `dy[30,0]=2`.
+
+```{code-cell} ipython3
+samplerate = int(1/dt)
+out_file=100*np.array([dy[0,:] for i in range(30)]).reshape(-1,)
+Audio(data=out_file,rate=samplerate)
+```
 
 ```{code-cell} ipython3
 
