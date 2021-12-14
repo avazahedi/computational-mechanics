@@ -524,16 +524,6 @@ plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
 plt.title('dx = 1mm')
 ```
 
-```{code-cell} ipython3
-dTdx = 
-flux = -k*dTdx
-plt.plot(x[1:]*1000,flux,'ro',label='heat flux')
-plt.xlabel('distance along fin (mm)')
-plt.ylabel('Temperature (C)')
-plt.legend(bbox_to_anchor=(1,0.5),loc='center left');
-plt.title('heat flux')
-```
-
 2. Consider the encastre beam shown in the __Static Beam deflections__ section. Use the following material and geometry (1-m steel rod 1-cm-by-1-cm) with 100 N/m load applied
 
 $EI \frac{d^4w}{dx^4} = q.$
@@ -553,41 +543,39 @@ b. Create a finite difference approximation with 10, 20, 30, and 40 segments.
 
 c. Plot the error between the maximum predicted numerical deflection (b) and the analytical deflection (a). What is the convergence rate of the finite difference approximation?
 
++++
+
+Using the boundary conditions, we can immediately find that C=D=0. We can also set up 2 equations and 2 unknowns to find A and B. </br>
+A = 50 </br>
+B = -25
+
 ```{code-cell} ipython3
 L=1
 E=200e9
 I=0.01**4/12
-q=100
-h=10
+q=q0=100
+# h=10
+segments = [10,20,30,40]
 
 A=np.diag(np.ones(5)*6)\
-+np.diag(np.ones(4)*-4,-1)\
-+np.diag(np.ones(4)*-4,1)\
-+np.diag(np.ones(3),-2)\
-+np.diag(np.ones(3),2)
+    +np.diag(np.ones(4)*-4,-1)\
+    +np.diag(np.ones(4)*-4,1)\
+    +np.diag(np.ones(3),-2)\
+    +np.diag(np.ones(3),2)
 A[0,0]+=-1
 A[-1,-1]+=-1
 
-b=-np.ones(5)*q/E/I*h**4
 
-w=np.linalg.solve(A,b)
-xnum=np.arange(0,L+h/2,h)
-print('finite difference A:\n------------------')
-print(A)
-print('\nfinite difference b:\n------------------')
-print(b)
-print('\ndeflection of beam (mm)\n-------------\n',w*1000)
-print('at position (m) \n-------------\n',xnum[1:-1])
-```
+for h in segments:
+    b=-np.ones(5)*q/E/I*h**4
 
-```{code-cell} ipython3
-x=np.linspace(0,L)
-w_an=q0*x**4/24 + A*x**3/6 + B*x**2/2 + C*x + D
-
-plt.plot(xnum,np.block([0,w*1000,0]),'s')
-plt.plot(x,w_an*1000)
-```
-
-```{code-cell} ipython3
-
+    w=np.linalg.solve(A,b)
+    xnum=np.arange(0,L+h/2,h)
+#     xnum=np.linspace(0,L+h/2,h)
+#     print('finite difference A:\n------------------')
+#     print(A)
+    print('\nfinite difference b:\n------------------')
+    print(b)
+    print('\ndeflection of beam (mm)\n-------------\n',w*1000)
+    print('at position (m) \n-------------\n',xnum[1:-1])
 ```
